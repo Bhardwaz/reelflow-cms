@@ -1,0 +1,302 @@
+/* VideoManager.css */
+
+/* --- Main Layout --- */
+.vm-container {
+  min-height: 100vh;
+  background-color: #f9fafb; /* gray-50 */
+  font-family: sans-serif;
+  color: #1f2937;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.vm-wrapper {
+  width: 100%;
+  max-width: 72rem; /* max-w-6xl */
+}
+
+/* --- Header Section --- */
+.vm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.vm-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  cursor: pointer;
+}
+
+/* --- Content Grid (Left List / Right Preview) --- */
+.vm-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* 66% List, 33% Preview */
+  gap: 2rem;
+  align-items: start;
+}
+
+/* --- Left Panel: Controls --- */
+.vm-controls-card {
+  /* No background/border here, usually these float above the list or are part of the list header */
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Tabs */
+.vm-tabs {
+  display: inline-flex;
+  background-color: white;
+  padding: 0.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  width: fit-content;
+}
+
+.vm-tab {
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.375rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.vm-tab.active {
+  background-color: #f3f4f6;
+  color: #111827;
+  box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+}
+
+.vm-tab-count {
+  margin-left: 0.5rem;
+  background-color: #e5e7eb;
+  padding: 0.1rem 0.4rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+}
+
+/* Action Bar (Live Toggle + Add Button) */
+.vm-action-bar {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.vm-toggle-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.vm-toggle-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+}
+.vm-toggle-label.live { background-color: #dcfce7; color: #166534; }
+.vm-toggle-label.off { background-color: #f3f4f6; color: #6b7280; }
+
+/* Custom CSS Toggle Switch */
+.vm-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+.vm-switch input { opacity: 0; width: 0; height: 0; }
+.vm-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+.vm-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+input:checked + .vm-slider { background-color: #1f2937; }
+input:checked + .vm-slider:before { transform: translateX(20px); }
+
+.vm-add-btn {
+  background-color: #1f2937;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 1.2rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* --- Video List --- */
+.vm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.vm-list-item {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: box-shadow 0.2s, border-color 0.2s;
+  cursor: pointer;
+}
+
+.vm-list-item:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border-color: #d1d5db;
+}
+
+.vm-list-item.selected {
+  border-color: #1f2937;
+  background-color: #f9fafb;
+}
+
+.vm-drag-handle {
+  color: #d1d5db;
+  cursor: grab;
+}
+.vm-drag-handle:hover { color: #6b7280; }
+
+.vm-item-thumb {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.375rem;
+  background-color: #f3f4f6;
+  object-fit: cover;
+  border: 1px solid #e5e7eb;
+}
+
+.vm-item-info {
+  flex-grow: 1;
+}
+
+.vm-item-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.1rem;
+}
+
+.vm-item-product {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.2rem;
+  color: #6b7280;
+}
+
+.vm-product-mini {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.125rem;
+  background-color: #e5e7eb;
+}
+
+.vm-item-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.vm-action-icon {
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  color: #6b7280;
+  transition: background-color 0.2s;
+}
+.vm-action-icon:hover { background-color: #f3f4f6; color: #1f2937; }
+.vm-action-icon.delete:hover { background-color: #fef2f2; color: #dc2626; }
+
+/* --- Right Panel: Preview --- */
+.vm-preview-card {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  min-height: 400px;
+  position: sticky;
+  top: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 1.5rem;
+  aspect-ratio: 9 / 16;
+}
+
+.vm-empty-state {
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.vm-preview-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.vm-preview-video {
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  background-color: #000;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  position: relative; /
+}
+
+.vm-media-element {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Ensure the overlay sits on top */
+.vm-preview-video .absolute {
+  z-index: 10;
+}
+
+.vm-preview-details h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.vm-preview-details p {
+  font-size: 0.875rem;
+  color: #6b7280;
+}

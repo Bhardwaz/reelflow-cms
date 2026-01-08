@@ -1,0 +1,80 @@
+/* Table layout */
+.reels-table {
+  background: white;
+  border-radius: 14px;
+  padding: 1rem;
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 80px 1.5fr 1fr 1fr 1fr 1fr;
+  font-weight: 600;
+  padding: 1rem;
+  color: #111;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 80px 1.5fr 1fr 1fr 1fr 1fr;
+  align-items: center;
+  padding: 1.2rem 1rem;
+  border-top: 1px solid #eee;
+}
+
+/* Shimmer blocks */
+.shimmer-box {
+  background: #e6e8eb;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+}
+
+.text {
+  width: 60%;
+  height: 16px;
+}
+
+.small {
+  width: 80px;
+  height: 14px;
+}
+
+.icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+.date {
+  width: 90px;
+  height: 14px;
+}
+
+/* Shimmer animation */
+.shimmer-box::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 150%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,0.6),
+    transparent
+  );
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    left: 150%;
+  }
+}

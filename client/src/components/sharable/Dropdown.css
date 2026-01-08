@@ -1,0 +1,49 @@
+/* Container for the whole dropdown system */
+.dropdown-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+/* The floating menu */
+.dropdown-menu {
+  position: absolute;
+  top: 110%; /* Just below the button */
+  right: 0;   /* Aligns to the right edge of the button */
+  min-width: 200px;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  z-index: 50; /* Ensures it sits on top of other content */
+  padding: 0.5rem 0;
+  overflow: hidden;
+}
+
+/* Individual Items inside the menu */
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: #374151;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: #f3f4f6; /* Light gray on hover */
+  color: #111827;
+}
+
+/* Optional: Danger item (e.g. Delete) */
+.dropdown-item.danger {
+  color: #dc2626;
+}
+.dropdown-item.danger:hover {
+  background-color: #fef2f2;
+}

@@ -1,0 +1,168 @@
+/* --- GLOBAL RESET --- */
+.upload-page-container * {
+  box-sizing: border-box;
+}
+
+/* --- MAIN PAGE CONTAINER --- */
+.upload-page-container {
+  width: 100%; 
+  height: 100vh; 
+  overflow: hidden; 
+  display: flex;
+  flex-direction: column;
+  background-color: #f8fafc;
+  font-family: 'Inter', sans-serif;
+  color: #0f172a;
+}
+
+/* --- HEADER --- */
+.page-header {
+  height: 60px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.header-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+/* --- MAIN SPLIT LAYOUT --- */
+.content-body {
+  flex: 1; 
+  display: flex;
+  overflow: hidden; 
+}
+
+/* --- LEFT PANEL: Editor --- */
+.left-panel {
+  width: 60%; 
+  padding: 2rem;
+  overflow-y: auto; 
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  border-right: 1px solid #e2e8f0;
+}
+
+/* --- RIGHT PANEL: Preview --- */
+.right-panel {
+  width: 40%;
+  background-color: #f1f5f9;
+  display: flex;
+  justify-content: center;
+  align-items: center; 
+  padding: 1rem;
+}
+
+/* --- CARDS --- */
+.ui-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.card-title {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+/* --- VIDEO SELECTOR BOX --- */
+.video-selector-box {
+  width: 100%;
+  height: 220px; 
+  background-color: #f8fafc;
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  text-align: center;
+  position: relative;
+}
+
+.video-selector-box.filled {
+  border: none;
+  background-color: #000;
+}
+
+.selector-media {
+  height: 100%;       
+  max-width: 400px;   
+  width: auto;        
+  object-fit: contain;
+}
+
+.empty-text {
+  color: #64748b;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* --- PREVIEW CONTAINER (Strict 9:16) --- */
+.preview-container {
+  width: 100%;
+  max-width: 320px; 
+  aspect-ratio: 9 / 16; 
+  background-color: #000;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border: 4px solid #334155; 
+}
+
+.preview-media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
+}
+
+/* --- PRODUCT OVERLAY --- */
+.preview-product-card {
+  position: absolute;
+  bottom: 20px;
+  left: 15px;
+  right: 15px;
+  background: white;
+  padding: 10px;
+  border-radius: 10px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* --- FORM ELEMENTS --- */
+.product-btn {
+  width: 100%;
+  padding: 0.8rem;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  color: #475569;
+  text-align: center;
+}

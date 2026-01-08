@@ -1,0 +1,12 @@
+{
+  "appId": "1af1ddfd1767622953697",
+  "name": "Sumitapp",
+  "client_id": "056753e7f33035bb",
+  "client_secret": "830fd22ba603f625d5d9190e8a3e380de9be",
+  "app_url": "",
+  "redirect_uri": "",
+  "template": "node",
+  "embedded": true,
+  "platform": "all",
+  "version": "1.0.0"
+}
