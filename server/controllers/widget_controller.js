@@ -239,7 +239,7 @@ exports.getWidgetWithProducts = asyncHandler(async (req, res) => {
         populate: {
             path: 'mediaId',
             select: 'url thumbnailUrl previewAnimationUrl productId productName'
-        }
+        }   
     }).lean()
 
     if (!widget) {

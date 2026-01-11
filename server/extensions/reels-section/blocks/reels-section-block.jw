@@ -1,0 +1,24 @@
+<div 
+  class="joon-web-widget"
+  data-widget-id="695f7f7883875439cd4de4d5"
+  data-page-type="home" 
+  data-product-id=""
+  style="min-height: 50px; width: 100%;"
+>
+
+  <style>
+    .jw-placeholder { text-align: center; padding: 20px; color: #999; }
+  </style>as
+  <div class="jw-placeholder">
+    Loading Stories...
+  </div>
+</div>
+
+<script src="https://centered-rfc-eng-franklin.trycloudflare.com/extensions/reels-section/assets/reels-section.js" defer="defer"></script>
+
+<style>
+  .joon-web-widget {
+    padding-top: {{ block.settings.padding_top }}px;
+    padding-bottom: {{ block.settings.padding_bottom }}px;
+  }
+</style>

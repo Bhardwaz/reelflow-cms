@@ -168,7 +168,7 @@ const VideoSelection = ({ onBack }) => {
                                  </div>
 
                                  <div className="vs-product-title" title={video.title}>
-                                    {video.title || "Untitled"}
+                                    {video?.productName || video?.title || "Not a title"}
                                  </div>
                             </div>
                         </div>

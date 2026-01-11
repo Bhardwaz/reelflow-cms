@@ -1,0 +1,23 @@
+{
+  "name": "reels-section",
+  "version": "1.0.0",
+  "type": "theme_app_extension",
+  "blocks": [
+    {
+      "type": "app_embed",
+      "name": "Reels",
+      "target": "section",
+      "src": "blocks/reels-section-block.jw"
+    }
+  ],
+  "assets": [
+    {
+      "path": "assets/reels-section.css",
+      "type": "css"
+    },
+    {
+      "path": "assets/reels-section.js",
+      "type": "js"
+    }
+  ]
+}

@@ -2,6 +2,22 @@ require('dotenv').config()
 const express = require("express");
 const { connectingToDatabase } = require('../config/database');
 const app = express();
+app.get('/test-file-path', (req, res) => {
+  const fs = require('fs');
+  const path = require('path');
+  
+  // 1. Where does Node THINK the folder is?
+  const targetPath = path.join(__dirname, '../extensions');
+  
+  // 2. Does it actually exist?
+  const exists = fs.existsSync(targetPath);
+  
+  res.json({
+    currentDir: __dirname,
+    lookingFor: targetPath,
+    doesFileExist: exists
+  });
+});
 const cors = require('cors')
 const errorHandler = require('../middleware/errorHandler');
 app.options("*", cors());
@@ -61,6 +77,25 @@ app.use(session({
     maxAge: 24 * 60 * 60 * 1000
   }
 }));
+
+app.get('/extensions/reels-section/assets/reels-section.js', (req, res) => {
+  
+  // 1. Define the physical path to the file on your computer
+  // (Make sure the file is actually inside an 'assets' folder now, as per your path below)
+  const filePath = path.join(__dirname, '../extensions/reels-section/assets/reels-section.js');
+
+  // 2. Explicitly set the header to prevent CORB/ORB blocking
+  res.setHeader('Content-Type', 'application/javascript');
+
+  // 3. Send the file
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      console.error("❌ File sending error:", err);
+      // If file is missing, tell the browser 404 (don't send HTML!)
+      res.status(404).send("File not found");
+    }
+  });
+});
 
 // health check of backend
 app.get("/healthCheck", (req, res) => {

@@ -12,6 +12,6 @@ router.get('/', auth, checkDbSession, getAllWidgets)
 // delete the widget and its related data in pivot table
 router.delete('/:widgetId', auth, checkDbSession, deleteWidget)
 
-router.get('/getWidget', auth, checkDbSession, getWidgetWithProducts)
+router.get('/getWidget', getWidgetWithProducts)
 
 module.exports = router
