@@ -20,6 +20,9 @@ const sessionSchema = new mongoose.Schema({
         type: Number
     },
 
+    bunnyLibraryId: { type: String, default: null },
+    bunnyApiKey: { type: String, default: null },
+
     expires_at: {
         type: Date
     }

@@ -1,92 +1,43 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { AlertCircle, ChevronDown, Check } from 'lucide-react'; 
-import './WidgetSelection.css'; 
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../sharable/Button';
 import { useWidgetStore } from '../../../stores/useWidgetStore';
-
-// Standard E-commerce Page Options
-const PAGE_OPTIONS = [
-  { value: 'home', label: 'Home Page' },
-  { value: 'all_products', label: 'All Products' },
-  { value: 'product_detail', label: 'Product Detail Page' },
-  { value: 'all_collections', label: 'All Collections' },
-  { value: 'collection_detail', label: 'Collection Detail Page' },
-  { value: 'cart', label: 'Cart Page' },
-  { value: 'checkout', label: 'Checkout Page' },
-  { value: 'blog', label: 'Blog / News' },
-  { value: 'about', label: 'About Us' },
-  { value: 'contact', label: 'Contact Us' },
-];
+import './WidgetSelection.css';
+import { AlertCircle, Type } from 'lucide-react';
 
 const WidgetSelection = () => {
   const navigate = useNavigate();
-  
-  const selectedWidget = useWidgetStore((state) => state.selectedWidget);
-  const selectedPage = useWidgetStore((state) => state.selectedPage)
-  const setSelectedWidget = useWidgetStore((state) => state.setSelectedWidget);
-  const setSelectedPage = useWidgetStore((state) => state.setSelectedPage);
 
-  const [selectedPageValue, setSelectedPageValue] = useState(selectedPage || null);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const selectedWidget = useWidgetStore((state) => state.selectedWidget);
+  const heading = useWidgetStore((state) => state.heading);
+  const setSelectedWidget = useWidgetStore((state) => state.setSelectedWidget);
+  const setHeading = useWidgetStore((state) => state.setHeading);
+
   const [showError, setShowError] = useState(false);
 
-  const dropdownRef = useRef(null);
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
-    }
-    // Bind the event listener
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      // Unbind the event listener on clean up
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [dropdownRef]);
-
-  // Helper to find label
-  const currentLabel = PAGE_OPTIONS.find(p => p.value === selectedPageValue)?.label;
-
   const handleNext = () => {
-    if (!selectedWidget || !selectedPageValue) {
+    if (!selectedWidget || !heading || heading.trim() === '') {
       setShowError(true);
       return;
     }
-    // Sync local state to Global Store before navigating
-    if (setSelectedPage) setSelectedPage(selectedPageValue);
-    
     navigate("/create/library");
-  };
-
-  const handlePageSelect = (option) => {
-    setSelectedPageValue(option.value);
-    setSelectedPage(option.value)
-    setIsDropdownOpen(false);
-    setShowError(false);
   };
 
   return (
     <div className='container-wrapper'>
       <div className="main-content">
-
         <div className="ws-header">
-          <div className="ws-logo-box">
-            <span>*</span>
-          </div>
+          <div className="ws-logo-box"><span>*</span></div>
           <h1 className="ws-title">JoonWeb Shoppable Reel</h1>
         </div>
 
         <div className="ws-card">
-
-          {/* Section 1: Select Widget */}
           <div className="ws-section">
             <h2 className="ws-section-title">Select widget</h2>
             <p className="ws-section-desc">Choose a widget variant to add to your store.</p>
 
             <div className="ws-grid">
+
               <WidgetOption
                 id="carousel"
                 label="Carousel"
@@ -101,6 +52,7 @@ const WidgetSelection = () => {
                 label="Stories"
                 isSelected={selectedWidget === 'stories'}
                 onClick={setSelectedWidget}
+                disabled={true} // <--- Disables click & shows badge
               >
                 <StoriesPreview />
               </WidgetOption>
@@ -110,6 +62,7 @@ const WidgetSelection = () => {
                 label="Floating"
                 isSelected={selectedWidget === 'pip'}
                 onClick={setSelectedWidget}
+                disabled={true} // <--- Disables click & shows badge
               >
                 <PipPreview />
               </WidgetOption>
@@ -118,78 +71,46 @@ const WidgetSelection = () => {
 
           <hr className="ws-divider" />
 
-          {/* Section 2: Select Page */}
           <div className="ws-select-wrapper">
-            <h2 className="ws-section-title">Select Page</h2>
-            <p className="ws-section-desc">Choose a page for your widget.</p>
+            <h2 className="ws-section-title">Widget Title</h2>
+            <p className="ws-section-desc">Give your widget a title (e.g. New Arrivals).</p>
 
-            {/* Added ref={dropdownRef} here to track clicks */}
-            <div className="ws-select-container" style={{ position: 'relative' }} ref={dropdownRef}>
-              
-              {/* Trigger Box */}
-              <div 
-                className="ws-select-box" 
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-              >
-                <span className={`ws-select-placeholder ${selectedPageValue ? 'active-text' : ''}`}>
-                  {currentLabel || "Select a page, product or collection"}
-                </span>
-                <ChevronDown 
-                    size={16} 
-                    color="#9ca3af" 
-                    style={{ transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: '0.2s' }} 
-                />
+            <div className="ws-select-container">
+
+              <div className="w-full md:w-[50%] p-2">
+                
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Type className={`h-5 w-5 ${showError && !heading ? 'text-red-400' : 'text-gray-400'}`} />
+                  </div>
+
+                  <input
+                    type="text"
+                    placeholder="e.g. Summer Collection"
+                    style={{ paddingLeft:"10px", paddingRight: "4px", paddingTop:'4px', paddingBottom: "4px" }}
+                    className={`w-full pl-10 pr-4 py-2.5 text-sm font-medium text-gray-900 bg-white rounded-lg border shadow-sm placeholder:text-gray-400 transition-all duration-200 ease-in-out focus:outline-none focus:ring-4 ${showError && !heading
+                        ? 'border-red-300 focus:border-red-500 focus:ring-red-50'
+                        : 'border-gray-200 hover:border-gray-300 focus:border-black focus:ring-gray-100'
+                      }`}
+                    value={heading || ''}
+                    onChange={(e) => {
+                      setHeading(e.target.value);
+                      if (showError) setShowError(false);
+                    }}
+                  />
+                </div>
+
+                {showError && !heading ? (
+                  <p className="flex items-center gap-1.5 mt-2 text-xs font-medium text-red-500 animate-pulse">
+                    <AlertCircle size={14} />
+                    This field is required
+                  </p>
+                ) : (
+                  <p className="mt-2 text-xs text-gray-500">
+                    This title will be displayed above your videos.
+                  </p>
+                )}
               </div>
-
-              {/* Dropdown List (Opens Upwards) */}
-              {isDropdownOpen && (
-                <div className="ws-dropdown-list" style={{
-                    position: 'absolute',
-                    bottom: '100%',     
-                    left: 0,
-                    right: 0,
-                    marginBottom: '8px', 
-                    backgroundColor: 'white',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    maxHeight: '240px',
-                    overflowY: 'auto',
-                    zIndex: 10,
-                    boxShadow: '0 -4px 6px -1px rgba(0, 0, 0, 0.1)' 
-                }}>
-                  {PAGE_OPTIONS.map((option) => (
-                    <div 
-                      key={option.value}
-                      className="ws-dropdown-item"
-                      onClick={() => handlePageSelect(option)}
-                      style={{
-                        padding: '10px 12px',
-                        fontSize: '1.4rem',
-                        cursor: 'pointer',
-                        color: '#374151',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        backgroundColor: selectedPageValue === option.value ? '#f3f4f6' : 'white'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = selectedPageValue === option.value ? '#f3f4f6' : 'white'}
-                    >
-                      {option.label}
-                      {selectedPageValue === option.value && <Check size={14} color="#10b981" />}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Error Message */}
-              {showError && !selectedPageValue && (
-                <div className="ws-error-msg">
-                  <AlertCircle size={16} />
-                  <span style={{ fontSize: "1rem" }}> Please select a page</span>
-                </div>
-              )}
             </div>
           </div>
 
@@ -197,7 +118,7 @@ const WidgetSelection = () => {
             <Button
               className="ws-next-btn"
               onClick={handleNext}
-              disabled={!selectedWidget || !selectedPage} 
+              disabled={!selectedWidget || !heading}
             >
               Next
             </Button>
@@ -205,23 +126,44 @@ const WidgetSelection = () => {
 
         </div>
       </div>
-
     </div>
   );
 };
 
-// --- Sub-components (Unchanged) ---
-const WidgetOption = ({ id, label, isSelected, onClick, children }) => (
-  <div onClick={() => onClick(id)} className={`ws-option ${isSelected ? 'selected' : ''}`}>
-    <div className="ws-option-frame">
-      <div className="phone-mockup">
-        <div className="phone-notch"></div>
-        <div className="phone-screen">{children}</div>
+// --- UPDATED SUB-COMPONENTS ---
+
+// ✅ Updated WidgetOption with Disabled Logic
+const WidgetOption = ({ id, label, isSelected, onClick, children, disabled }) => {
+  const handleClick = () => {
+    if (!disabled) {
+      onClick(id);
+    }
+  };
+
+  return (
+    <div
+      onClick={handleClick}
+      className={`ws-option relative ${isSelected ? 'selected' : ''} ${disabled ? 'opacity-60 cursor-not-allowed grayscale' : 'cursor-pointer'}`}
+    >
+      {/* Coming Soon Badge Overlay */}
+      {disabled && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/50 backdrop-blur-[1px] rounded-lg">
+          <span className="bg-black text-white text-xs font-bold px-2 py-1 rounded-full shadow-md">
+            Coming Soon
+          </span>
+        </div>
+      )}
+
+      <div className="ws-option-frame">
+        <div className="phone-mockup">
+          <div className="phone-notch"></div>
+          <div className="phone-screen">{children}</div>
+        </div>
       </div>
+      <span className="ws-option-label">{label}</span>
     </div>
-    <span className="ws-option-label">{label}</span>
-  </div>
-);
+  );
+};
 
 const CarouselPreview = () => (
   <div className="carousel-layout">

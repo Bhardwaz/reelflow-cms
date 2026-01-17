@@ -2,15 +2,16 @@ import React, { useEffect, useState } from 'react';
 import {
   ArrowLeft, ExternalLink, GripVertical, Eye, Trash2, Plus, Play
 } from 'lucide-react';
-import './WidgetsManager.css';
+import './WidgetManager.css';
 import Button from '../../sharable/Button';
 import { useNavigate } from 'react-router-dom';
-import List from './List';
+import List from '../widget/List';
 import { useWidgetStore } from '../../../stores/useWidgetStore';
-import useRemoveMedia from './hooks/useRemoveMedia';
-import useDeleteWidget from './hooks/useDeleteWidget';
+import useRemoveMedia from '../widget/hooks/useRemoveMedia';
+import useDeleteWidget from '../widget/hooks/useDeleteWidget';
+import useToggleLive from './hooks/useToggleLive';
 
-const WidgetsManager = ({ onBack }) => {
+const WidgetManager = ({ onBack }) => {
   const [activeTab, setActiveTab] = useState('carousel');
   const [isLive, setIsLive] = useState(true);
   const [videos, setVideos] = useState([]);
@@ -19,10 +20,13 @@ const WidgetsManager = ({ onBack }) => {
 
   const selectedWidgetId = useWidgetStore((state) => state.selectedWidgetId);
   const widgetsData = useWidgetStore(state => state.widgetsData)
+  
+   if (!selectedWidgetId) { navigate('video/pages', { replace: true })}
 
   // current widget
   const currentWidget = widgetsData?.find(widget => widget._id === selectedWidgetId);
-   
+  const filteredItems = currentWidget?.items.filter(item => !item.mediaId.isDeleted)
+
   // mutate for removing media 
   const { mutate: removeMedia, isPending: isRemoveMediaPending } = useRemoveMedia()
   const { mutate: deleteWidget, isPending: isDeletingWidget } = useDeleteWidget();
@@ -31,8 +35,8 @@ const WidgetsManager = ({ onBack }) => {
     if (currentWidget) {
       setIsLive((currentWidget?.isLive && currentWidget?.integrate) || false)
       setActiveTab(currentWidget?.widgetType?.toLowerCase() || 'carousel');
-
-      const mappedVideos = currentWidget.items?.map(item => {
+      
+      const mappedVideos = filteredItems.map(item => {
         const media = item.mediaId || {}
 
         return {
@@ -40,9 +44,11 @@ const WidgetsManager = ({ onBack }) => {
           title: media.title || 'Untitled Video',
           product: media.productName || "No Product Linked",
           thumb: media.thumbnailUrl || '#e5e7eb',
+          preview: media.previewAnimationUrl,
           originalItemId: item._id,
           url: media.url,
-          mediaType: media.mediaType
+          mediaType: media.mediaType,
+          productImage: media?.productImage
         }
       }) || []
       setVideos(mappedVideos)
@@ -60,30 +66,44 @@ const WidgetsManager = ({ onBack }) => {
     if (confirmed) {
       setVideos((prev) => prev.filter(v => v._id !== videoId));
       if (selectedVideo?._id === videoId) setSelectedVideo(null);
-      
+
       removeMedia({
-         widgetId: selectedWidgetId, 
-         mediaId: videoId
+        widgetId: selectedWidgetId,
+        mediaId: videoId
       })
     }
   };
 
   const handleDeleteWidget = () => {
-     if(!selectedWidgetId) return
-     const widgetId = selectedWidgetId
-    
+    if (!selectedWidgetId) return
+    const widgetId = selectedWidgetId
+
     const confirmed = window.confirm(
-       "Are you sure you want to delete this ENTIRE widget? This action cannot be undone."
+      "Are you sure you want to delete this ENTIRE widget? This action cannot be undone."
     );
 
-    if(confirmed) {
+    if (confirmed) {
       deleteWidget(widgetId, {
         onSuccess: () => {
-          navigate("/dashboard")
+          navigate("/video/pages")
         }
       })
     }
-  } 
+  }
+
+  const { mutate: toggleLive, isLoading: isGoingLive, error } = useToggleLive()
+
+  const handleLive = () => {
+    if (!selectedWidgetId) return
+    const newStatus = !isLive;
+    toggleLive(
+      {
+        widgetId: selectedWidgetId,
+        isLive: newStatus
+      });
+  }
+
+  console.log(currentWidget, "currnt widget")
 
   if (!currentWidget) {
     return (
@@ -91,7 +111,7 @@ const WidgetsManager = ({ onBack }) => {
         <div className="main-content flex items-center justify-center h-screen">
           <div className="text-center">
             <p className="mb-4 text-xl">No widget selected.</p>
-            <Button onClick={() => navigate('/dashboard')}>Go to Dashboard</Button>
+            <Button onClick={() => navigate(-1)}>Go to Widgets</Button>
           </div>
         </div>
       </div>
@@ -107,14 +127,14 @@ const WidgetsManager = ({ onBack }) => {
             <ArrowLeft size={20} />
             <h1>{currentWidget.name.toUpperCase() || 'Widget Manager'}</h1>
           </div>
-          <div style={{ display:'flex', gap:'1rem', justifyContent:'center', alignItems:'center' }}>
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', alignItems: 'center' }}>
             <Button onClick={() => handleDeleteWidget()}>
-               <Trash2 size={16} />
-               Delete this widget
+              <Trash2 size={16} />
+              Delete this widget
             </Button>
 
-            <Button>
-              Preview in theme
+            <Button onClick={() => handleLive()}>
+                Toggle
               <ExternalLink size={16} />
             </Button>
           </div>
@@ -133,18 +153,18 @@ const WidgetsManager = ({ onBack }) => {
                 >
                   Carousel <span className="vm-tab-count">{activeTab === 'carousel' ? videos.length : 0}</span>
                 </div>
-                <div
+                {/* <div
                   className={`vm-tab ${activeTab === 'story' ? 'active' : ''}`}
                 // onClick={() => setActiveTab('story')}
                 >
                   Story <span className="vm-tab-count">{activeTab === 'story' ? videos.length : 0}</span>
-                </div>
-                <div
+                </div> */}
+                {/* <div
                   className={`vm-tab ${activeTab === 'floating' ? 'active' : ''}`}
                 // onClick={() => setActiveTab('floating')}
                 >
                   Floating <span className="vm-tab-count">{activeTab === 'floating' ? videos.length : 0}</span>
-                </div>
+                </div> */}
               </div>
 
               {/* Action Bar */}
@@ -163,9 +183,9 @@ const WidgetsManager = ({ onBack }) => {
                   </label>
                 </div>
 
-                <Button onClick={() => navigate('/create/library')}>
+                <Button onClick={() => navigate('/attach/media')}>
                   <div className='icon-box'> <Plus size={16} /> </div>
-                  Add more videos
+                  Attach more videos
                 </Button>
               </div>
 
@@ -265,4 +285,4 @@ const WidgetsManager = ({ onBack }) => {
   );
 };
 
-export default WidgetsManager;
+export default WidgetManager;

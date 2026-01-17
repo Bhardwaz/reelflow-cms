@@ -11,6 +11,8 @@ const BaseMedia = new mongoose.Schema({
         uppercase: true, set: (v) => v ? v.trim().slice(0, 25) : v
     },
 
+    nameForBunny: { type: String },
+
     mediaType: {
         type: String, requird: true,
         enum:['Video', 'Image']
@@ -22,10 +24,26 @@ const BaseMedia = new mongoose.Schema({
       index: true
     },
 
+    isDeleted: {
+        type: Boolean,
+        default: false,
+        index: true,
+    },
+
+    views: {
+      type: Number,
+      default: 0
+    },
+
+    lastSyncedAt: Date,
+
+    deletedAt: { type: Date },
+
     url: { type: String, required: true},
 
     productId: { type: Number, required: true },
-    productName: { type: String, required: true }
+    productName: { type: String, required: true },
+    productImage: { type: String,  required: true},
 
 }, { timestamps: true, ...options })
 

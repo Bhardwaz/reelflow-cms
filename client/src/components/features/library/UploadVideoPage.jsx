@@ -9,6 +9,7 @@ import useImageUpload from './hooks/useImageUpload';
 import { useAppBridge } from '../../../hooks/useAppBridge';
 import { useSiteData } from './hooks/useSiteData';
 import toast from 'react-hot-toast';
+import useVideoUpload2 from './hooks/useVideoUpload2';
 
 const UploadVideoPage = () => {
   const navigate = useNavigate();
@@ -70,13 +71,14 @@ const UploadVideoPage = () => {
 
     let mediaType
     const productName = product?.title
-    const productId = product.id
+    const productId = product?.id
+    const productImage = product?.cover
     const title = media?.file?.name
 
     try {
       if (media.type.startsWith("video")) {
         mediaType = 'Video'
-        await useVideoUpload(title, media, setProgress, mutate, productName, productId)
+        await useVideoUpload2(title, media, setProgress, mutate, productName, productId, productImage)
       }
 
       // if (media.type.startsWith("image")) {

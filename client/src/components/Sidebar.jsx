@@ -46,12 +46,12 @@ function Sidebar() {
 
         {/* 3. DASHBOARD (The Table View) */}
         <NavLink
-          to="/dashboard"
+          to="/library"
           className={({ isActive }) =>
             `nav-item ${isActive ? "active" : ""}`
           }
         >
-          Dashboard
+          Library
         </NavLink>
       </div>
     </div>

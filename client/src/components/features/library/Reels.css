@@ -270,6 +270,47 @@
   animation: spin 1s linear infinite;
 }
 
+.delete-icon-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  
+  /* Initial State: Hidden */
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-5px);
+  
+  background-color: white;
+  color: #ef4444; /* Red color */
+  border: 1px solid #fee2e2;
+  border-radius: 6px;
+  padding: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+/* Hover State: Show the button */
+.reel-item-card:hover .delete-icon-btn {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+/* Hover on the button itself */
+.delete-icon-btn:hover {
+  background-color: #fee2e2;
+  transform: scale(1.05);
+}
+
+.delete-icon-btn:active {
+  transform: scale(0.95);
+}
+
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }

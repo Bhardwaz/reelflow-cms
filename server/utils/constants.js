@@ -1,7 +1,8 @@
 const axios = require('axios');
 const Video = require('../models/media/video_model');
 const Image = require('../models/media/image_model');
-const sendResponse = require("../utils/sendResponse")
+const sendResponse = require("../utils/sendResponse");
+const PlatformSession = require('../models/PlatformSession');
 
 const deriveBunnyUrls = (videoId) => ({
       previewAnimationUrl: `https://${process.env.BUNNY_STREAM_ZONE}/${videoId}/preview.webp`,
@@ -22,24 +23,29 @@ const handleVideoCreation = (data, site) => {
             throw { status: 400, message: "Missing videoId for video media" };
       }
 
-      if(!site) {
+      if (!site) {
             return sendResponse.error(res, "MISSING_SITE", "site not found is session", 404)
       }
 
       const { previewAnimationUrl, thumbnailUrl, url } = deriveBunnyUrls(data.videoId);
 
+      const cleanTitle = data.title.trim().replace(/[^a-zA-Z0-9]/g, "-");
+      const prefixNameForCDN = `Shoppable-Videos-Plugin-${cleanTitle}`;
+
       return new Video({
-            title: data.title,
+            title: cleanTitle,
             bunnyVideoId: data.videoId,
             libraryId: process.env.BUNNY_LIBRARY_ID,
             previewAnimationUrl,
             thumbnailUrl,
             url,
             site,
+            nameForBunny: prefixNameForCDN,
 
             // product
             productId: data.productId,
             productName: data.productName,
+            productImage: data.productImage
       });
 }
 
@@ -48,7 +54,7 @@ const handleImageCreation = (data, site) => {
             throw { status: 400, message: "Missing bunnyImageId for image media" };
       }
 
-      if(!site) {
+      if (!site) {
             return sendResponse.error(res, "MISSING_SITE", "site not found is session", 404)
       }
 

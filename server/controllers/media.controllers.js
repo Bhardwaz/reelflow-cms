@@ -1,4 +1,5 @@
 const Media = require('../models/media/base_model');
+const mediaEvents = require("./events/mediaEvents");
 
 // discriminator 
 const Video = require('../models/media/video_model');
@@ -24,7 +25,7 @@ const { default: mongoose } = require('mongoose');
 const deriveBunnyUrls = (videoId) => ({
     previewAnimationUrl: `https://${process.env.BUNNY_STREAM_ZONE}/${videoId}/preview.webp`,
     thumbnailUrl: `https://${process.env.BUNNY_STREAM_ZONE}/${videoId}/thumbnail.jpg`,
-    url: `https://iframe.mediadelivery.net/embed/${process.env.BUNNY_LIBRARY_ID}/${videoId}`
+    url: `https://${process.env.BUNNY_STREAM_ZONE}/${videoId}/playlist.m3u8`
 });
 
 // 2. Configure Multer
@@ -42,7 +43,7 @@ exports.createImage = asyncHandler(async (req, res) => {
 
     // Upload to Bunny
     const command = new PutObjectCommand({
-        Bucket: process.env.BUNNY_STORAGE_NAME, 
+        Bucket: process.env.BUNNY_STORAGE_NAME,
         Key: fileName,
         Body: fileStream,
         ContentType: req.file.mimetype,
@@ -58,13 +59,13 @@ exports.createImage = asyncHandler(async (req, res) => {
     fs.unlinkSync(req.file.path);
 
     const publicUrl = `https://${process.env.BUNNY_PULL_ZONE}.b-cdn.net/${fileName}`;
-    
+
     let newMedia = handleImageCreation(req.body)
     await newMedia.save()
 
-    return sendResponse.success(res, { 
+    return sendResponse.success(res, {
         url: publicUrl,
-        bunnyImageId: fileName 
+        bunnyImageId: fileName
     }, "Image uploaded successfully", 200);
 });
 
@@ -140,7 +141,7 @@ exports.removeMediaFromWidget = asyncHandler(async (req, res) => {
     const { widgetId, mediaId } = req.params
     const site = req.session.site
 
-    if(!site){
+    if (!site) {
         return sendResponse.error(res, "SITE_NOT_FOUND", "Could not get site", 404);
     }
 
@@ -166,27 +167,68 @@ exports.removeMediaFromWidget = asyncHandler(async (req, res) => {
     return sendResponse.success(res, null, "Video removed from widget successfully", 200);
 })
 
-exports.getProducts = async (req, res) => {
-  try {
-    const access_token = req.accessToken || req.session.access_token
-    const site = req.session.site
+exports.deleteMedia = asyncHandler(async (req, res) => {
+    const site = req.session.site;
+    const { mediaId: _id } = req.params;
 
-    if(!access_token || !site){
-      return sendResponse.error(res, "SESSION_ERROR", "session not found for fetching site data", 401)
+    if (!site || !_id) return sendResponse.error(res, "BAD_REQUEST", "Invalid Request", 400);
+
+    // 1. Find Media
+    const media = await Media.findOne({ _id, site: site });
+    if (!media) return sendResponse.error(res, "NOT_FOUND", "Media not found", 404);
+
+    // 2. SOFT DELETE (Immediate UI Update)
+    const softDeletedMedia = await Media.findByIdAndUpdate(
+        _id, 
+        { isDeleted: true, deletedAt: new Date() },
+        { new: true }
+    );
+
+    const eventPayload = {
+        mediaId: media._id,
+        mediaType: media.mediaType
     }
 
-    const api_version = process.env.API_VERSION || '26.0'
+    if (media.mediaType === 'Video') {
+        eventPayload.bunnyVideoId = media.bunnyVideoId;
+    } else if (media.mediaType === 'Image') {
+        eventPayload.bunnyImageId = media.bunnyImageId;
+    }
 
-    const api = new JoonWebApi(
-      access_token,
-      site,
-      api_version
-    )
+    // 3. EMIT EVENT (Start Background Process)
+    // We pass only the necessary data to the listener
+    mediaEvents.emit('START_MEDIA_DELETION', eventPayload );
 
-    const response = await api.request("products.json")
+    // 4. RETURN INSTANT RESPONSE
+    return sendResponse.success(
+        res, 
+        softDeletedMedia, 
+        { message: "Media deleted successfully (Processing in background)" }, 
+        200
+    );
+});
 
-    return sendResponse.success(res, { products: response.products }, { message: "Products fetched successfully" }, 200)
-  } catch (err) {
-    return sendResponse.error(res, "JOONWEB_API_ERROR", err.message, err.response?.status || 500)
-  }
+exports.getProducts = async (req, res) => {
+    try {
+        const access_token = req.accessToken || req.session.access_token
+        const site = req.session.site
+
+        if (!access_token || !site) {
+            return sendResponse.error(res, "SESSION_ERROR", "session not found for fetching site data", 401)
+        }
+
+        const api_version = process.env.API_VERSION || '26.0'
+
+        const api = new JoonWebApi(
+            access_token,
+            site,
+            api_version
+        )
+
+        const response = await api.request("products.json")
+
+        return sendResponse.success(res, { products: response.products }, { message: "Products fetched successfully" }, 200)
+    } catch (err) {
+        return sendResponse.error(res, "JOONWEB_API_ERROR", err.message, err.response?.status || 500)
+    }
 }

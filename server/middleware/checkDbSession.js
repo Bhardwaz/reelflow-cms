@@ -8,6 +8,8 @@ const checkDbSession = async (req, res, next) => {
       // identifying the site if it exists in our Session
       const site = req.session?.site
 
+      console.log(site, "abbas site")
+
       if (!site) {
          return sendResponse.error(res, "NOT_PERMITTED", "missing credentials]]", 401)
       }
@@ -17,6 +19,8 @@ const checkDbSession = async (req, res, next) => {
       if (!isSessionExists) {
          return sendResponse.error(res, "NO_SESSION_EXIST", "Session invalid or expired", 401)
       }
+
+      req.access_token = isSessionExists?.access_token
 
       console.log(isSessionExists, "session from db")
 

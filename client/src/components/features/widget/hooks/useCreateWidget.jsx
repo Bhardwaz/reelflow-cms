@@ -2,7 +2,9 @@
   import axios from 'axios';
   import toast from 'react-hot-toast';
   import { apiRequest } from '../../../../service/apiRequest';
-import { useWidgetStore } from '../../../../stores/useWidgetStore';
+  import { useWidgetStore } from '../../../../stores/useWidgetStore';
+import { useNavigate } from 'react-router-dom';
+
 
   const createWidget = async (widgetData) => {
       return apiRequest({
@@ -13,6 +15,7 @@ import { useWidgetStore } from '../../../../stores/useWidgetStore';
   }
 
   export const useCreateWidget = () => {
+    const navigate = useNavigate()
     const queryClient = useQueryClient();
     const resetWizard = useWidgetStore(state => state.resetWizard)
 
@@ -22,7 +25,8 @@ import { useWidgetStore } from '../../../../stores/useWidgetStore';
       onSuccess: (data) => {
         toast.success("Widget created successfully!");
         queryClient.invalidateQueries({ queryKey: ['widgets'] });
-        resetWizard()   
+        resetWizard()
+        navigate('/');
       },
 
       onError: (error) => {

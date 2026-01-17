@@ -9,37 +9,53 @@ export const useWidgetStore = create(
 
         selectedWidget: null,
         selectedMediaItems: [],
-        selectedPage: '',
-        
+        heading: '',
+
         selectedWidgetId: null,
+        attachMediaItemsToWidget: [],
+        attachMediaItemsWidgetType: null,
         isLive: true,
         widgetsData: [],
 
+        toggleAttachMediaItems: (mediaItem) => set((state) => {
+          const exists = state.attachMediaItemsToWidget.some((item) => item._id === mediaItem._id);
+
+          let updatedList;
+          if (exists) {
+            updatedList = state.attachMediaItemsToWidget.filter((item) => item._id !== mediaItem._id);
+          } else {
+            updatedList = [...state.attachMediaItemsToWidget, mediaItem];
+          }
+
+          return { attachMediaItemsToWidget: updatedList };
+        }),
+
         setSelectedWidget: (widgetType) => set({ selectedWidget: widgetType }),
         setSelectedWidgetId: (_id) => set({ selectedWidgetId: _id }),
-        setSelectedPage: (page) => set({ selectedPage: page }),
+        selectAttachMediaItemsWidgetType: (widgetType) => set({ attachMediaItemsWidgetType: widgetType }),
+        setHeading: (heading) => set({ heading: heading }),
         setIsLive: (status) => set({ isLive: status }),
         setWidgetsData: (data) => set({ widgetsData: data }),
 
         removeWidgetFromStore: (widgetId) => set((state) => ({
-            widgetsData: state.widgetsData.filter((w) => w._id !== widgetId),
-            selectedWidgetId: state.selectedWidgetId === widgetId ? null : state.selectedWidgetId
+          widgetsData: state.widgetsData.filter((w) => w._id !== widgetId),
+          selectedWidgetId: state.selectedWidgetId === widgetId ? null : state.selectedWidgetId
         })),
 
         removeMediaFromWidget: (widgetId, mediaId) => set((state) => {
-            const updatedWidgets = state.widgetsData.map((widget) => {
-                if (widget._id === widgetId) {
-                    return {
-                        ...widget,
-                        items: widget.items.filter((item) => {
-                            const currentItemId = item.mediaId?._id || item.mediaId;
-                            return currentItemId !== mediaId;
-                        })
-                    };
-                }
-                return widget;
-            });
-            return { widgetsData: updatedWidgets };
+          const updatedWidgets = state.widgetsData.map((widget) => {
+            if (widget._id === widgetId) {
+              return {
+                ...widget,
+                items: widget.items.filter((item) => {
+                  const currentItemId = item.mediaId?._id || item.mediaId;
+                  return currentItemId !== mediaId;
+                })
+              };
+            }
+            return widget;
+          });
+          return { widgetsData: updatedWidgets };
         }),
 
         toggleMediaSelection: (mediaItem) => set((state) => {
@@ -58,11 +74,22 @@ export const useWidgetStore = create(
         resetWizard: () => set({
           selectedWidget: null,
           selectedMediaItems: [],
-          selectedPage: ''
+          heading: ''
         }),
+
+        resetAttachMedias: () => set({
+          selectedWidgetId: null,
+          attachMediaItemsToWidget: [],
+          attachMediaItemsWidgetType: '',
+        })
       }),
       {
         name: 'widget-wizard-storage',
+        partialize: (state) => ({
+          selectedWidget: state.selectedWidget,
+          selectedMediaItems: state.selectedMediaItems,
+          heading: state.heading,
+        }),
       }
     )
   )

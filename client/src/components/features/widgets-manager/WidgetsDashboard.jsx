@@ -1,12 +1,13 @@
 import React, { useEffect } from 'react'; // 1. Import useEffect
 import { ArrowLeft, Search, ChevronDown } from 'lucide-react';
-import './VideoPagesDashboard.css';
+import './WidgetsDashboard.css';
 import Button from '../../sharable/Button';
 import { useNavigate } from 'react-router-dom';
 import useFetchWidgets from './hooks/useFetchWidgets';
 import { useWidgetStore } from '../../../stores/useWidgetStore';
+import DashboardShimmer from './DashboardShimmer';
 
-const VideoPagesDashboard = ({ onBack, onUpload }) => {
+const WidgetsDashboard = ({ onBack, onUpload }) => {
   const navigate = useNavigate();
   
   const { data: widgets, isLoading } = useFetchWidgets();
@@ -19,7 +20,7 @@ const VideoPagesDashboard = ({ onBack, onUpload }) => {
     }
   }, [widgets, setWidgetsData]);
 
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading) return <DashboardShimmer/> ;  // this is widget dashboard shimmer not dashboard on home
 
   const handleRowClick = (_id) => {
       setSelectedWidgetId(_id);
@@ -38,7 +39,7 @@ const VideoPagesDashboard = ({ onBack, onUpload }) => {
           </div>
           <div className="action-buttons-group">
             <Button variant="secondary" onClick={onUpload}> Upload videos </Button>
-            <Button variant="primary" onClick={() => navigate("/select/widget")}> Add videos to a new page </Button>
+            <Button variant="primary" onClick={() => navigate("select/widget")}> Add videos to a new page </Button>
           </div>
         </header>
 
@@ -92,13 +93,11 @@ const VideoPagesDashboard = ({ onBack, onUpload }) => {
                 );
               })}
             </div>
-
           </div>
-        
         </main>
       </div>
     </div>
   );
 };
 
-export default VideoPagesDashboard;
+export default WidgetsDashboard;

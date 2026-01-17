@@ -16,8 +16,8 @@ const uploadVideoToBunny = async (uploadUrl, file, authData, onProgress) => {
   const v = await axios.put(uploadUrl, file, {
     headers: {
       "Content-Type": "application/octet-stream",
-      // Authorization: authData.authorizationSignature,
-      // AuthorizationExpire: authData.authorizationExpire,
+      // "AuthorizationSignature": authData.authorizationSignature,
+      // "AuthorizationExpire": authData.authorizationExpire,
       "AccessKey": "e54f3468-4dc7-4940-a5e1ed461ca1-5f78-409b",
     },
     onUploadProgress: (e) => {
@@ -28,7 +28,7 @@ const uploadVideoToBunny = async (uploadUrl, file, authData, onProgress) => {
   });
 };
 
-async function useVideoUpload(title, media, setProgress, mutate, productName, productId) {
+async function useVideoUpload(title, media, setProgress, mutate, productName, productId, productImage) {
   try {
     if (!media || !media.file) {
       toast.error("No media file found");
@@ -66,6 +66,7 @@ async function useVideoUpload(title, media, setProgress, mutate, productName, pr
       videoId,
       productName: productName || "",
       productId: productId || "",
+      productImage: productImage || "",
       title
     });
 

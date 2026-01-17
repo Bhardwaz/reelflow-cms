@@ -1,19 +1,43 @@
 const sendResponse = require("./sendResponse")
 const axios = require('axios')
-const crypto = require("crypto")
+const crypto = require("crypto");
+const { checkLimits } = require("../middleware/checkLimits");
 
 const videoRequestToBunny = async (req, res) => {
+  const site = req.session.site
+  if (!site) {
+    return sendResponse.error(res, "SITE_NOT_FOUND", "session is not available", 403)
+  }
+
+  let userPlan = "free"
+   
   try {
-    const site = req.session.site
-    if(!site){
-     return sendResponse.error(res, "SITE_NOT_FOUND", "session is not available", 403)
-    }
+    await checkLimits(site, userPlan, 'Media');
+  } catch (limitError) {
+    return sendResponse.error(res, "PLAN_LIMIT_REACHED", limitError.message, 403);
+  }
+
+  try {
+    const { title } = req.body;
+
+    // TODO ---
+    // const { fileSize } = req.body
+    // if (!fileSize) return sendResponse.error(res, "INVALID_DATA", "File size required", 400);
+    // const fileSizeMB = fileSize / (1024 * 1024);
+    // const sizeLimit = config.limits.maxVideoSizeMB;
+
+    //     if (fileSizeMB > sizeLimit) {
+    //         return sendResponse.error(
+    //             res, 
+    //             "FILE_TOO_LARGE", 
+    //             `File is ${fileSizeMB.toFixed(1)}MB. Your plan limit is ${sizeLimit}MB.`, 
+    //             403
+    //         );
+    //     }
 
     const LibraryId = process.env.BUNNY_LIBRARY_ID
     const CollectionId = process.env.BUNNY_COLLECTION_ID
-    const API_KEY= process.env.BUNNY_STREAM_API_KEY
-
-    const { title } = req.body;
+    const API_KEY = process.env.BUNNY_STREAM_API_KEY
 
     if (!title || title.trim().length < 3) {
       return sendResponse.error(
@@ -32,7 +56,7 @@ const videoRequestToBunny = async (req, res) => {
       },
       {
         headers: {
-          AccessKey: API_KEY ,
+          AccessKey: API_KEY,
           "Content-Type": "application/json",
         },
       }
@@ -54,9 +78,12 @@ const videoRequestToBunny = async (req, res) => {
     const dataToSign = LibraryId + API_KEY + expirationTime + videoId
     const signature = crypto.createHash('sha256').update(dataToSign).digest('hex');
 
+    console.log(signature, "signature of cerdentials ")
+
     sendResponse.success(
       res,
       {
+        LibraryId,
         videoId,
         uploadUrl: `https://video.bunnycdn.com/library/${process.env.BUNNY_LIBRARY_ID}/videos/${videoId}`,
 

@@ -4,12 +4,23 @@ const { asyncHandler } = require('../utils/constants');
 const sendResponse = require('../utils/sendResponse');
 const processInBatches = require('../services/processInBatches');
 const fetchProductsByIds = require('../services/fetchProductsById');
+const PlatformSession = require('../models/PlatformSession');
+const { checkLimits } = require('../middleware/checkLimits');
 
 exports.createWidget = asyncHandler(async (req, res) => {
     const site = req.session.site
 
     if (!site) {
         return sendResponse.error(res, "SITE_NOT_FOUND", "Session not found", 401)
+    }
+
+    const { selectedWidget } = req.body
+    let userPlan = 'free'
+
+    try {
+        await checkLimits(site, userPlan, 'Widget')
+    } catch (error) {
+        return sendResponse.error(res, "PLAN_LIMIT_REACHED", error.message, 403);
     }
 
     const session = await mongoose.startSession();
@@ -19,12 +30,12 @@ exports.createWidget = asyncHandler(async (req, res) => {
         const {
             selectedWidget,
             selectedMediaIds,
-            selectedPage,
+            heading,
             ...config
         } = req.body;
 
-        if (!selectedWidget || !selectedPage) {
-            throw new Error("Missing required fields: selectedWidget or selectedPage.");
+        if (!selectedWidget || !heading) {
+            throw new Error("Missing required fields: selectedWidget or heading.");
         }
 
         if (!selectedMediaIds || !Array.isArray(selectedMediaIds) || selectedMediaIds.length === 0) {
@@ -40,7 +51,7 @@ exports.createWidget = asyncHandler(async (req, res) => {
             throw new Error("One or more videos are invalid or do not belong to you.");
         }
 
-        const formattedName = `${selectedWidget} - ${selectedPage.replace(/_/g, ' ').toUpperCase()}`;
+        const formattedName = heading || `${selectedWidget} Widget`;
 
         const typeKey = selectedWidget.toLowerCase()
         let newWidget
@@ -53,7 +64,7 @@ exports.createWidget = asyncHandler(async (req, res) => {
 
             newWidget = new Carousel({
                 name: formattedName,
-                page: selectedPage,
+                heading,
                 widgetType: 'Carousel',
                 previewAnimation: true,
                 site: site,
@@ -63,7 +74,7 @@ exports.createWidget = asyncHandler(async (req, res) => {
         else if (typeKey.includes('story') || typeKey.includes('stories')) {
             newWidget = new Story({
                 name: formattedName,
-                page: selectedPage,
+                heading,
                 site: site,
                 widgetType: 'Story',
                 label: "Watch",
@@ -84,7 +95,7 @@ exports.createWidget = asyncHandler(async (req, res) => {
 
             newWidget = new Pip({
                 name: formattedName,
-                page: selectedPage,
+                heading,
                 site: site,
                 widgetType: 'Pip',
                 position: 'bottom-right',
@@ -195,6 +206,21 @@ exports.attachMediaToWidget = asyncHandler(async (req, res) => {
     }
 });
 
+exports.toggleLive = asyncHandler(async (req, res) => {
+    const { widgetId } = req.params;
+    const { isLive } = req.body;
+    if (!widgetId) return sendResponse.error(res, "NO_WIDGET", "provide an widget to go live", 400);
+
+    const widget = await Widget.findById(widgetId)
+    if (!widget) return sendResponse.error(res, "WIDGET_NOT_FOUND", "can not find any widget for this id", 404);
+
+    widget.isLive = isLive;
+    widget.integrate = true;
+
+    await widget.save()
+    return sendResponse.success(res, widget, "Widget is now Live", 200);
+})
+
 exports.getAllWidgets = asyncHandler(async (req, res) => {
     const site = req.session.site
     if (!site) return sendResponse.error(res, "UNAUTHORIZED", "Session not found", 401);
@@ -208,7 +234,7 @@ exports.getAllWidgets = asyncHandler(async (req, res) => {
             populate: {
                 path: 'mediaId',
                 model: 'Media',
-                select: 'title thumbnailUrl url mediaType productName productImage isLive'
+                select: 'title thumbnailUrl url mediaType productName productImage isLive productImage isDeleted'
             }
         })
 
@@ -224,22 +250,26 @@ exports.getAllWidgets = asyncHandler(async (req, res) => {
 })
 
 exports.getWidgetWithProducts = asyncHandler(async (req, res) => {
-    const { page } = req.query
+    const { site, widgetType } = req.query
 
-    if (!page) {
-        return sendResponse.error(res, "BAD_REQUEST", "Page Type is required", 400);
+    if (!site) {
+        return sendResponse.error(res, "BAD_REQUEST", "site is required", 400);
     }
 
+    const isExist = await PlatformSession.findOne({ site_domain: site })
+    const access_token = isExist?.access_token
+
     const widget = await Widget.findOne({
-        page: page,
+        site,
         isLive: true,
         integrate: true,
+        widgetType,
     }).populate({
         path: 'items',
         populate: {
             path: 'mediaId',
             select: 'url thumbnailUrl previewAnimationUrl productId productName'
-        }   
+        }
     }).lean()
 
     if (!widget) {
@@ -248,60 +278,41 @@ exports.getWidgetWithProducts = asyncHandler(async (req, res) => {
 
     const productsIds = [...new Set(widget.items.map(item => item.mediaId.productId).filter(id => id))]
 
-    const results = await processInBatches(productsIds, 5, fetchProductsByIds);
+    const promises = productsIds.map(id => fetchProductsByIds(id, site, access_token));
+    const data = await Promise.all(promises);
 
     const productsWithKeys = {}
 
-    console.log(results, "results of joonweb apis")
+    // console.log(results, "results of joonweb daaaaaapis")
 
-    results?.forEach(r => {
-        if (r && r.id) {
-            productsWithKeys[r.id] = r
+    // results?.forEach(r => {
+    //     if (r && r.id) {
+    //         productsWithKeys[r.id] = r
+    //     }
+    // })
+
+    data.forEach(product => {
+        if (product && product.id) {
+            productsWithKeys[product.id] = product;
+        }
+    });
+
+    widget.items.forEach(item => {
+        const pId = item?.mediaId?.productId;
+        if (pId && productsWithKeys[pId]) {
+            if (item.mediaId) {
+                item.mediaId.productJSON = productsWithKeys[pId];
+            }
         }
     })
 
-    const populatedItems = widget.items.map((item) => {
-        // handle if mediaId is null (deleted video)
-        if (!item.mediaId) return null;
-        const media = item.mediaId
-        const pid = media.productId
-
-        const finalProduct = productsWithKeys[pid] || (pid ? {
-            id: pid,
-            title: media.productName || "Product",
-            price: "Check Website", // Fallback if API fails
-            image: null // You might want a default placeholder here
-        } : null);
-
-        return {
-            _id: item._id,
-            sortOrder: item.sortOrder,
-            widgetId: item.widgetId,
-
-            videoUrl: media.url,
-            thumbnailUrl: media.thumbnailUrl,
-            previewAnimationUrl: media.previewAnimationUrl,
-
-            productId: pid,
-            productName: media.productName,
-
-            product: finalProduct
-        };
-    }).filter(item => item !== null);
-
-    const finalResponse = {
-        widget,
-        items: populatedItems
-    };
-
-    return sendResponse.success(res, finalResponse, "Widget loaded with products", 200);
-
+    return sendResponse.success(res, widget, "Widget loaded with products", 200);
 })
 
 exports.deleteWidget = asyncHandler(async (req, res) => {
     const site = req.session.site
 
-    if(!site) {
+    if (!site) {
         return sendResponse.error(res, "INVALID_SESSION", "session not found", 401)
     }
 

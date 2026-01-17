@@ -16,11 +16,14 @@ const BaseWidget = new Schema({
         index: true
     },
 
-    page: {
-        type: String,
-        required: true,
-        enum: ['home', 'product-details', 'profile', 'cart', "all_collections", "collection_detail", "cart", "checkout", "blog", "about", "contact", "all_products"],
-        index: true
+    heading: {
+      type: String, 
+      required: true
+    },
+
+    atc: {
+        type: Number,
+        default: 0
     },
 
     integrate: {

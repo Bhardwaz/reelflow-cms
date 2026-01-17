@@ -2,22 +2,7 @@ require('dotenv').config()
 const express = require("express");
 const { connectingToDatabase } = require('../config/database');
 const app = express();
-app.get('/test-file-path', (req, res) => {
-  const fs = require('fs');
-  const path = require('path');
-  
-  // 1. Where does Node THINK the folder is?
-  const targetPath = path.join(__dirname, '../extensions');
-  
-  // 2. Does it actually exist?
-  const exists = fs.existsSync(targetPath);
-  
-  res.json({
-    currentDir: __dirname,
-    lookingFor: targetPath,
-    doesFileExist: exists
-  });
-});
+
 const cors = require('cors')
 const errorHandler = require('../middleware/errorHandler');
 app.options("*", cors());
@@ -41,6 +26,7 @@ const bunnyRoutes = require("../routes/bunny_route")
 const authRoutes = require("../routes/auth_routes")
 const mediaRoutes = require("../routes/media_routes")
 const widgetsRoutes = require("../routes/widgets_routes");
+const mediaEvents = require("../controllers/events/mediaEvents")
 
 // middlewares
 app.use(express.json());

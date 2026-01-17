@@ -1,7 +1,7 @@
 const express = require("express")
 const router = express.Router()
 
-const { getLibrary, createVideo, removeMediaFromWidget, getProducts } = require("../controllers/media.controllers");
+const { getLibrary, createVideo, removeMediaFromWidget, getProducts, deleteMedia } = require("../controllers/media.controllers");
 const auth = require("../middleware/auth");
 const { createImage, uploadMiddleware } = require("../controllers/media.controllers");
 const checkDbSession = require("../middleware/checkDbSession");
@@ -16,6 +16,7 @@ router.get("/", auth, checkDbSession, getLibrary)
 router.post("/upload-image", auth, checkDbSession, uploadMiddleware, createImage);
 router.delete('/:widgetId/media/:mediaId', auth, checkDbSession, removeMediaFromWidget);
 router.get("/getAllProducts", auth, checkDbSession, getProducts)
+router.delete("/:mediaId", deleteMedia)
 
 module.exports = router
 

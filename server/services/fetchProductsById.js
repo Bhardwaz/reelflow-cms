@@ -1,13 +1,15 @@
 const JoonWebApi = require("./joonwebApi");
 const productsCache = require("./cacheStore")
 
-const fetchProductsByIds = async (id) => {
+const fetchProductsByIds = async (id, site, access_token) => {
+  console.log(id, site, access_token, "alll threee")
   try {
-    const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
-    const site = process.env.SITE;
+    console.log("fetch products is working")
     const api_version = process.env.API_VERSION;
 
-    const api = new JoonWebApi(ACCESS_TOKEN, site, api_version);
+    console.log(site, "site that is coming")
+
+    const api = new JoonWebApi(access_token, site, api_version);
     
     // starting with this ID
     console.log(`Fetching product: ${id}...`);

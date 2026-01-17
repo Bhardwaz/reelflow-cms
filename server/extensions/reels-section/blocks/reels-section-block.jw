@@ -1,8 +1,9 @@
 <div 
   class="joon-web-widget"
-  data-widget-id="695f7f7883875439cd4de4d5"
+  data-widget-id=""
   data-page-type="home" 
   data-product-id=""
+  data-site="{{site.url}}.myjoonweb.com"
   style="min-height: 50px; width: 100%;"
 >
 
@@ -14,7 +15,9 @@
   </div>
 </div>
 
-<script src="https://centered-rfc-eng-franklin.trycloudflare.com/extensions/reels-section/assets/reels-section.js" defer="defer"></script>
+<script src="https://compatibility-devoted-durham-candles.trycloudflare.com/extensions/reels-section/assets/reels-section.js" defer="defer"></script>
+
+<script src="https://assets.mediadelivery.net/playerjs/playerjs-latest.min.js"></script>
 
 <style>
   .joon-web-widget {

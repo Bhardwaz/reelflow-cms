@@ -11,13 +11,14 @@ import Reels from "./components/features/library/Reels";
 // 3. Feature: Creation Wizard
 import WidgetSelection from "./components/features/widget/WidgetSelection";
 import VideoSelection from "./components/features/widget/VideoSelection";
-import WidgetsManager from "./components/features/widget/WidgetsManager";
 import Dashboard from "./components/features/dashboard/Dashboard"
 
 // 4. Feature: Dashboard
-import VideoPagesDashboard from "./components/features/dashboard/VideoPagesDashboard";
 import WidgetPreview from "./components/features/widget/WidgetPreview";
 import UploadVideoPage from "./components/features/library/UploadVideoPage";
+import WidgetsDashboard from "./components/features/widgets-manager/WidgetsDashboard";
+import WidgetManager from "./components/features/widgets-manager/WidgetManager";
+import AttachVideosToWidget from "./components/features/widgets-manager/AttachVideosToWidget";
 
 export default function App() {
   return (
@@ -26,7 +27,7 @@ export default function App() {
         <Route element={<AppLayout />}>
           
           {/* Home / Library */}
-          <Route path="/" element={<Reels />} />
+          <Route path="/" element={<Dashboard />} />
 
           {/* Creation Flow (Wizard) */}
           <Route path="create">
@@ -35,14 +36,16 @@ export default function App() {
              <Route path="preview" element={< WidgetPreview />} />
           </Route>
 
-          <Route path="video/pages" element={<VideoPagesDashboard />} />
+          <Route path="video/pages" element={<WidgetsDashboard />} />
 
           <Route path="upload/media" element={<UploadVideoPage />} />
 
-          <Route path="widget/manager" element={<WidgetsManager />} />
+          <Route path="widget/manager" element={<WidgetManager />} />
+
+          <Route path="/attach/media" element={<AttachVideosToWidget/>} />
 
           {/* Analytics / Table View */}
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/library" element={<Reels />} />
 
         </Route>
       </Routes>

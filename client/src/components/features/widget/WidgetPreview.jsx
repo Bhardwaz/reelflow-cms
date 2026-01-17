@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { ArrowLeft, ExternalLink, Plus, Play, Loader2, Check } from 'lucide-react';
-import './WidgetsManager.css'; // Ensure this has your styles
+import '../widgets-manager/WidgetManager'; // Ensure this has your styles
 import Button from '../../sharable/Button';
 import { useNavigate } from 'react-router-dom';
 import List from './List'; // Your existing List component
 import { useWidgetStore } from '../../../stores/useWidgetStore';
 import useCreateWidget from './hooks/useCreateWidget'; // Your API Hook
+import { Package } from 'lucide-react';
 
 const WidgetPreview = ({ onBack }) => {
     const navigate = useNavigate();
@@ -14,7 +15,7 @@ const WidgetPreview = ({ onBack }) => {
     // --- 1. ZUSTAND STORE ---
     // We grab the full objects directly from the store (Client-side draft)-
     const selectedWidget = useWidgetStore((state) => state.selectedWidget);
-    const selectedPage = useWidgetStore((state) => state.selectedPage);
+    const heading = useWidgetStore((state) => state.heading);
     const selectedMediaItems = useWidgetStore((state) => state.selectedMediaItems);
     const toggleMediaSelection = useWidgetStore((state) => state.toggleMediaSelection);
     const isLive = useWidgetStore((state) => state.isLive);
@@ -29,7 +30,7 @@ const WidgetPreview = ({ onBack }) => {
     const handleIntegrate = () => {
         const payload = {
             selectedWidget,
-            selectedPage,
+            heading,
             selectedMediaIds: selectedMediaItems.map(item => item._id),
 
             isLive: isLive,
@@ -42,14 +43,7 @@ const WidgetPreview = ({ onBack }) => {
             }
         };
 
-        mutate(payload, {
-            onSuccess: (data) => {
-                console.log("Widget Published:", data);
-                toast.success("Widget Created Successfully")
-                resetWizard()
-                navigate('/dashboard');
-            }
-        });
+        mutate(payload);
     };
 
     const handleDelete = (e, video) => {
@@ -89,10 +83,10 @@ const WidgetPreview = ({ onBack }) => {
                     </div>
 
                     <div className='buttons-grp' style={{ display: "flex", gap: "1rem", alignItems: 'center' }}>
-                        <Button variant="secondary">
+                        {/* <Button variant="secondary">
                             Preview in theme
                             <ExternalLink size={16} />
-                        </Button>
+                        </Button> */}
 
                         {/* INTEGRATE BUTTON (Triggers Mutate) */}
                         <Button
@@ -153,7 +147,6 @@ const WidgetPreview = ({ onBack }) => {
                                         {isLive ? 'Instant Live' : 'Draft Mode'}
                                     </span>
 
-                                    {/* Custom CSS Toggle Switch */}
                                     <div style={{
                                         width: '44px',
                                         height: '24px',
