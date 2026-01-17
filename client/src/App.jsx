@@ -23,7 +23,7 @@ import NotFound from "./components/NotFound";
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/shoppable-reels">
       <Routes>
         <Route element={<AppLayout />}>
           
