@@ -19,6 +19,7 @@ import UploadVideoPage from "./components/features/library/UploadVideoPage";
 import WidgetsDashboard from "./components/features/widgets-manager/WidgetsDashboard";
 import WidgetManager from "./components/features/widgets-manager/WidgetManager";
 import AttachVideosToWidget from "./components/features/widgets-manager/AttachVideosToWidget";
+import NotFound from "./components/NotFound";
 
 export default function App() {
   return (
@@ -46,6 +47,8 @@ export default function App() {
 
           {/* Analytics / Table View */}
           <Route path="/library" element={<Reels />} />
+
+          <Route path="*" element={<NotFound />} />
 
         </Route>
       </Routes>

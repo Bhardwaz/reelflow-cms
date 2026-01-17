@@ -255,7 +255,7 @@ exports.getWidgetWithProducts = asyncHandler(async (req, res) => {
     if (!site) {
         return sendResponse.error(res, "BAD_REQUEST", "site is required", 400);
     }
-
+    
     const isExist = await PlatformSession.findOne({ site_domain: site })
     const access_token = isExist?.access_token
 

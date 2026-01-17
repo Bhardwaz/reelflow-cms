@@ -11,6 +11,8 @@ const { Context, JoonWebAPI, Helper } = require('@joonweb/joonweb-sdk')
 const session = require('express-session');
 const verifyHmac = require("../utils/joonwebHelper");
 const sendResponse = require("../utils/sendResponse")
+const rateLimit = require('express-rate-limit')
+const hpp = require('hpp')
 
 app.use(cors({
   origin: '*',
@@ -29,8 +31,8 @@ const widgetsRoutes = require("../routes/widgets_routes");
 const mediaEvents = require("../controllers/events/mediaEvents")
 
 // middlewares
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }))
+app.use(express.json({ limit: "10kb" }));
+app.use(express.urlencoded({ extended: true, limit: "10kb" }))
 
 // database
 connectingToDatabase()
@@ -63,6 +65,14 @@ app.use(session({
     maxAge: 24 * 60 * 60 * 1000
   }
 }));
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 app.get('/extensions/reels-section/assets/reels-section.js', (req, res) => {
   
@@ -100,29 +110,29 @@ app.get("/healthCheck", (req, res) => {
 //   });
 // }
 
-// async function checkValidation(req, res, next) {
-//   const site = req.session.site
-//   if (!site) {
-//     return sendResponse.error(res, "UNAUTHORIZED", "No active session found", 401);
-//   }
+async function checkValidation(req, res, next) {
+  const site = req.session.site
+  if (!site) {
+    return sendResponse.error(res, "UNAUTHORIZED", "No active session found", 401);
+  }
 
-//   try {
-//     const accessToken = await sessionManager.getAccessToken(site)
+  try {
+    const accessToken = await sessionManager.getAccessToken(site)
 
-//     if (!accessToken) {
-//       return sendResponse.error(res, "UNAUTHORIZED", "Session invalid or expired", 401);
-//     }
+    if (!accessToken) {
+      return sendResponse.error(res, "UNAUTHORIZED", "Session invalid or expired", 401);
+    }
 
-//     req.accessToken = accessToken
-//     req.site = site
+    req.accessToken = accessToken
+    req.site = site
     
-//     next()
+    next()
     
-//   } catch (error) {
-//     return sendResponse.error(res, "AUTH_ERROR", error.message, 500);
-//   }
+  } catch (error) {
+    return sendResponse.error(res, "AUTH_ERROR", error.message, 500);
+  }
 
-// }
+}
 
 app.get('/', async (req, res) => {
   console.log("App is running..");
@@ -169,14 +179,15 @@ app.get('/', async (req, res) => {
   res.sendFile(path.join(__dirname, '../dist', 'index.html'));
 });
 
-console.log("Again");
+app.use('/api', limiter);
+app.use(hpp());
 
 // routes
 app.use('/api/v1/bunny', bunnyRoutes)  // for bunny webhook - processing video  
 app.use('/auth', authRoutes)
 
 // checkpoint middleware
-// app.use(checkValidation)
+app.use(checkValidation)
 
 console.log("Passed Validation");
 app.use('/api/v1/media', mediaRoutes)  // image-video creation

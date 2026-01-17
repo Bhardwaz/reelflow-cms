@@ -35,9 +35,11 @@ const videoRequestToBunny = async (req, res) => {
     //         );
     //     }
 
-    const LibraryId = process.env.BUNNY_LIBRARY_ID
-    const CollectionId = process.env.BUNNY_COLLECTION_ID
-    const API_KEY = process.env.BUNNY_STREAM_API_KEY
+    // const LibraryId = process.env.BUNNY_LIBRARY_ID
+    // const CollectionId = process.env.BUNNY_COLLECTION_ID
+    // const API_KEY = process.env.BUNNY_STREAM_API_KEY
+
+    const { libraryId, apiKey } = isLibraryForUpload(site)
 
     if (!title || title.trim().length < 3) {
       return sendResponse.error(
@@ -49,14 +51,14 @@ const videoRequestToBunny = async (req, res) => {
     }
 
     const bunnyRes = await axios.post(
-      `https://video.bunnycdn.com/library/${LibraryId}/videos`,
+      `https://video.bunnycdn.com/library/${libraryId}/videos`,
       {
         title,
         collectionId: CollectionId,
       },
       {
         headers: {
-          AccessKey: API_KEY,
+          AccessKey: apiKey,
           "Content-Type": "application/json",
         },
       }

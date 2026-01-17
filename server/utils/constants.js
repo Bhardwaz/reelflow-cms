@@ -30,7 +30,6 @@ const handleVideoCreation = (data, site) => {
       const { previewAnimationUrl, thumbnailUrl, url } = deriveBunnyUrls(data.videoId);
 
       const cleanTitle = data.title.trim().replace(/[^a-zA-Z0-9]/g, "-");
-      const prefixNameForCDN = `Shoppable-Videos-Plugin-${cleanTitle}`;
 
       return new Video({
             title: cleanTitle,
@@ -40,7 +39,6 @@ const handleVideoCreation = (data, site) => {
             thumbnailUrl,
             url,
             site,
-            nameForBunny: prefixNameForCDN,
 
             // product
             productId: data.productId,

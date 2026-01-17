@@ -38,8 +38,8 @@ const WidgetsDashboard = ({ onBack, onUpload }) => {
             <h1>Video Pages</h1>
           </div>
           <div className="action-buttons-group">
-            <Button variant="secondary" onClick={onUpload}> Upload videos </Button>
-            <Button variant="primary" onClick={() => navigate("select/widget")}> Add videos to a new page </Button>
+            <Button variant="secondary" onClick={() => navigate("/upload/media")}> Upload videos </Button>
+            <Button variant="primary" onClick={() => navigate("/create/widget")}> Add videos to a new page </Button>
           </div>
         </header>
 

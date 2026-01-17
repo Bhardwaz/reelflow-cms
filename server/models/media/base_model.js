@@ -11,7 +11,10 @@ const BaseMedia = new mongoose.Schema({
         uppercase: true, set: (v) => v ? v.trim().slice(0, 25) : v
     },
 
-    nameForBunny: { type: String },
+    atc: {
+      type: Number,
+      default: 0
+    },
 
     mediaType: {
         type: String, requird: true,
