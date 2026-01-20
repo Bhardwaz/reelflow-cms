@@ -7,143 +7,320 @@ import {
     ShoppingCart,
     Video, 
     Sparkles,
-    Plus
+    Plus,
+    AlertTriangle,
+    TrendingUp,
+    Clock,
+    Eye,
+    Calendar,
+    Zap
 } from 'lucide-react';
 import { useSiteData } from '../library/hooks/useSiteData';
 import useViews from './useViews';
+import { useState, useEffect } from 'react';
 
 const Dashboard = () => {
     const { data: siteData } = useSiteData();
     const { data: dashboardView, isLoading } = useViews(); 
     const navigate = useNavigate();
     
+    const monthlyViews = dashboardView?.monthlyViews || 0;
     const totalViews = dashboardView?.totalViews || 0;
     const totalVideos = dashboardView?.videoCount || 0;
     
-    const planLimit = 100; 
-    const usagePercentage = isLoading ? 0 : Math.min((totalViews / planLimit) * 100, 100);
+    const planLimit = siteData?.plan?.monthlyLimit || 2000; // Default 2000 views/month
+    const usagePercentage = isLoading ? 0 : Math.min((monthlyViews / planLimit) * 100, 100);
+    
+    const isWarning = usagePercentage >= 80 && usagePercentage < 95;
+    const isCritical = usagePercentage >= 95;
+    
+    const [currentMonth, setCurrentMonth] = useState('');
+    const [dateRange, setDateRange] = useState('');
+    
+    useEffect(() => {
+        const now = new Date();
+        const month = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        setCurrentMonth(month);
+        
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        
+        const formatDate = (date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        setDateRange(`(${formatDate(firstDay)} - ${formatDate(lastDay)})`);
+    }, []);
+
+    const formatNumber = (num) => {
+        if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+        if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+        return num.toString();
+    };
+
+    // Get progress bar color based on usage
+    const getProgressColor = () => {
+        if (isLoading) return '#e5e7eb'; // Gray while loading
+        if (isCritical) return '#ef4444'; // Red for >95%
+        if (isWarning) return '#f59e0b'; // Orange for 80-95%
+        return '#10b981'; // Green for normal
+    };
+
+    // Get remaining views
+    const remainingViews = planLimit - monthlyViews;
+    const viewsUsedToday = dashboardView?.todayViews || 0;
 
     return (
         <div className="container-wrapper">
-
             <main className="main-content">
-    
+                {/* Header */}
                 <header className="dashboard-header">
                     <div className="logo-icon">
-                        <Sparkles size={16} fill="white" />
+                        <Sparkles size={18} fill="white" />
                     </div>
-                    <h1>JoonWeb Shoppable Reel</h1>
+                    <div>
+                        <h1>JoonWeb Shoppable Reel</h1>
+                        <p className="header-subtitle">Video Analytics Dashboard</p>
+                    </div>
+                    <div className="current-month">
+                        <Calendar size={14} />
+                        <span>{currentMonth}</span>
+                    </div>
                 </header>
 
                 <div className="content-stack">
-
+                    {/* Usage Card with Enhanced Progress Bar */}
                     <div className="card usage-card">
                         <div className="usage-header">
                             <div className="usage-title">
-                                <span className="bold-text">{planLimit} views</span>
+                                <span className="bold-text">Monthly View Limit</span>
                                 <Info size={14} className="info-icon" />
-                                <span className="date-range">(26 Jun - 26 Jul)</span>
+                            </div>
+                            <div className="usage-stats">
+                                <span className="usage-used">{formatNumber(monthlyViews)} views used</span>
+                                <span className="usage-remaining">{formatNumber(remainingViews)} remaining</span>
+                            </div>
+                        </div>
+
+                        <div className="usage-details">
+                            <div className="usage-limit">{formatNumber(planLimit)} total views</div>
+                            <div className="date-range-display">
+                                {dateRange}
+                                {viewsUsedToday > 0 && (
+                                    <span className="today-views">
+                                        <Zap size={12} />
+                                        {formatNumber(viewsUsedToday)} today
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Enhanced Progress Bar */}
+                        <div className="progress-container">
+                            <div className="progress-bar-container">
+                                <div 
+                                    className="progress-bar-fill"
+                                    style={{ 
+                                        width: `${usagePercentage}%`,
+                                        backgroundColor: getProgressColor(),
+                                        transition: 'width 0.8s ease-out, background-color 0.3s ease'
+                                    }}
+                                >
+                                    {/* Animated pulse effect for warning/critical */}
+                                    {(isWarning || isCritical) && !isLoading && (
+                                        <div className="progress-bar-pulse"></div>
+                                    )}
+                                </div>
+                                
+                                {/* Percentage markers */}
+                                <div className="progress-markers">
+                                    <div className="marker" style={{ left: '80%' }}>80%</div>
+                                    <div className="marker" style={{ left: '95%' }}>95%</div>
+                                </div>
                             </div>
                             
-                            {isLoading ? (
-                                <div className="h-5 w-24 bg-gray-200 rounded animate-pulse" />
-                            ) : (
-                                <span className="usage-used">{totalViews} views used</span>
-                            )}
+                            <div className="progress-labels">
+                                <span>0</span>
+                                <span className="current-usage">{formatNumber(monthlyViews)}</span>
+                                <span>{formatNumber(planLimit)}</span>
+                            </div>
                         </div>
 
-                        <div className="progress-bar-container">
-                            <div 
-                                className={`progress-bar-fill ${isLoading ? 'animate-pulse bg-gray-200' : ''}`} 
-                                style={{ 
-                                    width: isLoading ? '100%' : `${usagePercentage}%`, // Full gray bar while loading
-                                    backgroundColor: isLoading ? '#e5e7eb' : (usagePercentage >= 100 ? '#ef4444' : undefined)
-                                }}
-                            ></div>
-                        </div>
+                        {/* Warning Messages */}
+                        {isWarning && !isLoading && (
+                            <div className="warning-message warning">
+                                <AlertTriangle size={14} />
+                                <span>You've used {usagePercentage.toFixed(0)}% of your monthly views. Consider upgrading your plan.</span>
+                            </div>
+                        )}
+                        
+                        {isCritical && !isLoading && (
+                            <div className="warning-message critical">
+                                <AlertTriangle size={14} />
+                                <span>You've used {usagePercentage.toFixed(0)}% of your monthly views. Videos may stop displaying soon.</span>
+                            </div>
+                        )}
 
-                        <p className="helper-text">
-                            Views includes views from your current plan and additional purchased views.
-                        </p>
+                        <div className="usage-metrics-grid">
+                            <div className="metric">
+                                <div className="metric-label">Daily Average</div>
+                                <div className="metric-value">
+                                    {isLoading ? '...' : formatNumber(Math.round(monthlyViews / new Date().getDate()))}
+                                </div>
+                                <div className="metric-sub">views/day</div>
+                            </div>
+                            <div className="metric">
+                                <div className="metric-label">Projected Month End</div>
+                                <div className="metric-value">
+                                    {isLoading ? '...' : formatNumber(Math.round(monthlyViews * 30 / new Date().getDate()))}
+                                </div>
+                                <div className="metric-sub">estimated</div>
+                            </div>
+                        </div>
 
                         <div className="button-group">
-                            <Button variant='secondary'> View billing </Button>
-                            <Button variant='secondary'> Contact support </Button>
+                            <Button variant='secondary' icon={<TrendingUp size={14} />}>
+                                Upgrade Plan
+                            </Button>
+                            <Button variant='outline'>
+                                View Usage History
+                            </Button>
                         </div>
                     </div>
 
+                    {/* Overview Section */}
                     <div className="conversions-section">
                         <div className="section-header">
-                            <h2>Overview</h2>
-                            <span className="time-period">All Time</span>
+                            <div>
+                                <h2>Performance Overview</h2>
+                                <p className="section-subtitle">Real-time analytics from your video library</p>
+                            </div>
+                            <span className="time-period">Last 30 Days</span>
                         </div>
 
                         <div className="stats-grid">
                             <StatCard 
-                                icon={<User size={20} />} 
-                                label="Video viewers" 
-                                value={totalViews.toLocaleString()} 
-                                isLoading={isLoading} 
+                                icon={<Eye size={20} />} 
+                                label="Total Views" 
+                                value={formatNumber(totalViews)} 
+                                isLoading={isLoading}
+                                trend={dashboardView?.viewTrend || 0}
+                                description="All-time total"
+                                color="blue"
                             />
                             
                             <StatCard 
-                                icon={<ShoppingCart size={20} />} 
-                                label="Video ATC" 
-                                value="0" 
-                                isLoading={isLoading} 
+                                icon={<User size={20} />} 
+                                label="This Month" 
+                                value={formatNumber(monthlyViews)} 
+                                isLoading={isLoading}
+                                description="Current billing cycle"
+                                color="green"
+                            />
+
+                            <StatCard 
+                                icon={<Clock size={20} />} 
+                                label="Avg. Watch Time" 
+                                value={isLoading ? "..." : `${dashboardView?.avgWatchTime || 0}m`} 
+                                isLoading={isLoading}
+                                description="Per video view"
+                                color="purple"
                             />
 
                             <StatCard 
                                 icon={<Video size={20} />} 
-                                label="Total video uploads" 
+                                label="Published Videos" 
                                 value={totalVideos.toLocaleString()} 
-                                isLoading={isLoading} 
+                                isLoading={isLoading}
+                                description="In your library"
+                                color="orange"
                             />
                         </div>
                     </div>
 
-                    {/* Section 3: Add Videos */}
+                    {/* Add Videos Section */}
                     <div className="card videos-card">
-                        <h3>Shoppable videos</h3>
-                        <p className="description-text">
-                            Select a page and layout to start adding videos. Choose where you want your videos displayed, such as the homepage or customize the layout to fit your store.
-                        </p>
-
-                        <Button variant="primary" onClick={() => navigate('/create/widget')}>
-                            <div className="icon-box">
-                                <Plus size={14} />
+                        <div className="videos-header">
+                            <div>
+                                <h3>Shoppable Videos</h3>
+                                <p className="description-text">
+                                    Create engaging shoppable videos to boost conversions. Add products, tags, and CTAs to your videos.
+                                </p>
                             </div>
-                            Add videos to page
-                        </Button>
-                    </div>
+                            <div className="videos-count">
+                                <Video size={20} />
+                                <span>{totalVideos} videos</span>
+                            </div>
+                        </div>
 
+                        <div className="videos-actions">
+                            <Button 
+                                variant="primary" 
+                                onClick={() => navigate('/create/widget')}
+                                className="primary-action"
+                            >
+                                <div className="icon-box">
+                                    <Plus size={16} />
+                                </div>
+                                Upload New Video
+                            </Button>
+                            <div className="secondary-actions">
+                                <Button variant="secondary">
+                                    Manage Videos
+                                </Button>
+                                <Button variant="outline">
+                                    View Analytics
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </main>
         </div>
     );
 };
 
-const StatCard = ({ icon, label, value, isLoading }) => (
-    <div className="card stat-card">
-        <div className="stat-icon-wrapper">
-            {icon}
-        </div>
-        <div className="stat-content">
-            <div className="stat-label-row">
-                <span className="stat-label">{label}</span>
-                <Info size={12} className="info-icon-small" />
-            </div>
-            
-            {/* Logic: If loading, show pulsing box. Else, show number. */}
-            <div className="stat-value">
-                {isLoading ? (
-                    <div className="h-8 w-16 bg-gray-200 rounded-md animate-pulse mt-1" />
-                ) : (
-                    value
+const StatCard = ({ icon, label, value, isLoading, trend, description, color = 'blue' }) => {
+    const colorClasses = {
+        blue: 'text-blue-600 bg-blue-50',
+        green: 'text-green-600 bg-green-50',
+        purple: 'text-purple-600 bg-purple-50',
+        orange: 'text-orange-600 bg-orange-50',
+    };
+
+    return (
+        <div className="card stat-card">
+            <div className="stat-header">
+                <div className={`stat-icon-wrapper ${colorClasses[color]}`}>
+                    {icon}
+                </div>
+                {trend !== undefined && !isLoading && (
+                    <div className={`trend-badge ${trend > 0 ? 'trend-up' : 'trend-down'}`}>
+                        <TrendingUp size={12} />
+                        {Math.abs(trend)}%
+                    </div>
                 )}
             </div>
+            <div className="stat-content">
+                <div className="stat-label-row">
+                    <span className="stat-label">{label}</span>
+                    <Info size={12} className="info-icon-small" />
+                </div>
+                
+                <div className="stat-value">
+                    {isLoading ? (
+                        <div className="skeleton-loading">
+                            <div className="skeleton-bar"></div>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="value-display">{value}</div>
+                            {description && (
+                                <div className="stat-description">{description}</div>
+                            )}
+                        </>
+                    )}
+                </div>
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 export default Dashboard;

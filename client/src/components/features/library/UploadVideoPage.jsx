@@ -59,6 +59,7 @@ const UploadVideoPage = () => {
   };
 
   const handleSubmit = async () => {
+    
     if (!media) {
       toast.error("Please select a file first");
       return;
@@ -78,6 +79,7 @@ const UploadVideoPage = () => {
     try {
       if (media.type.startsWith("video")) {
         mediaType = 'Video'
+        console.log("use video upload 2 function starts")
         await useVideoUpload2(title, media, setProgress, mutate, productName, productId, productImage)
       }
 

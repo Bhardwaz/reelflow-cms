@@ -127,7 +127,7 @@ exports.createVideo = asyncHandler(async (req, res) => {
     let newMedia;
 
     if (mediaType === 'Video') {
-        newMedia = handleVideoCreation(req.body, site);
+        newMedia = handleVideoCreation(req.body, site, res);
     } else {
         return res.status(400).json({ message: "Invalid media type" });
     }

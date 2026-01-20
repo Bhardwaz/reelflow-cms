@@ -11,11 +11,9 @@ const { Context, JoonWebAPI, Helper } = require('@joonweb/joonweb-sdk')
 const session = require('express-session');
 const verifyHmac = require("../utils/joonwebHelper");
 const sendResponse = require("../utils/sendResponse")
-const rateLimit = require('express-rate-limit')
-const hpp = require('hpp')
 
 app.use(cors({
-  origin: '*',
+  origin: 'true',
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: "*",
@@ -65,14 +63,6 @@ app.use(session({
     maxAge: 24 * 60 * 60 * 1000
   }
 }));
-
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: 'Too many requests from this IP, please try again later.',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
 
 app.get('/extensions/reels-section/assets/reels-section.js', (req, res) => {
   
@@ -179,15 +169,12 @@ app.get('/', async (req, res) => {
   res.sendFile(path.join(__dirname, '../dist', 'index.html'));
 });
 
-app.use('/api', limiter);
-app.use(hpp());
-
 // routes
 app.use('/api/v1/bunny', bunnyRoutes)  // for bunny webhook - processing video  
 app.use('/auth', authRoutes)
 
 // checkpoint middleware
-app.use(checkValidation)
+//app.use(checkValidation)
 
 console.log("Passed Validation");
 app.use('/api/v1/media', mediaRoutes)  // image-video creation

@@ -3,29 +3,28 @@ const mongoose = require("mongoose");
 const sessionSchema = new mongoose.Schema({
     _id: {
         type: String,
-        requird: true
     },
 
     site_domain: {
         type: String,
-        required: true
+        requird: true,
     },
 
     access_token: {
         type: String,
-        required: true
     },
 
     authenticated_at: {
         type: Number
     },
 
-    bunnyLibraryId: { type: String, default: null },
-    bunnyApiKey: { type: String, default: null },
-
+    bunnyCollectionId: {
+        type: String, default: null
+    },
     expires_at: {
         type: Date
-    }
+    },
+    videosUploaded: { type: Number, default: 0 },
 }, {
     colllection: 'sessions',
     strict: false

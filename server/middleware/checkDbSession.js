@@ -20,7 +20,12 @@ const checkDbSession = async (req, res, next) => {
          return sendResponse.error(res, "NO_SESSION_EXIST", "Session invalid or expired", 401)
       }
 
-      req.access_token = isSessionExists?.access_token
+      req.access_token = isSessionExists?.access_token;
+      const bunnyCollectionId = isSessionExists?.bunnyCollectionId
+
+      if(bunnyCollectionId) {
+          req.bunnyCollectionId = bunnyCollectionId;
+      }
 
       console.log(isSessionExists, "session from db")
 

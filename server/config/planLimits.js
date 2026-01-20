@@ -7,6 +7,8 @@ const PLAN_LIMITS = {
             maxViews: 100,
             canReports: false,
             canWatermark: true,
+            maxVideoSizeMB: 100,
+            views: 100,
         }
     },
     basic: {
@@ -17,6 +19,8 @@ const PLAN_LIMITS = {
             maxViews: 100,
             canReports: true,
             canWatermark: true,
+            maxVideoSizeMB: 150,
+            views: 150,
         }
     },
     pro: {
@@ -27,6 +31,8 @@ const PLAN_LIMITS = {
             maxViews : 100, 
             canReports: true,
             canWatermark: true,
+            maxVideoSizeMB: 200,
+            views: 200,
         }
     }
 }

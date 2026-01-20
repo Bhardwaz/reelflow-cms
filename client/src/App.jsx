@@ -1,19 +1,14 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import './App.css';
 
-// 1. Layouts
 import AppLayout from "./components/layout/AppLayout";
 
-// 2. Feature: Library (Home)
 import Reels from "./components/features/library/Reels";
-// import Edit from "./components/features/library/EditReel"; // (If you use it)
 
-// 3. Feature: Creation Wizard
 import WidgetSelection from "./components/features/widget/WidgetSelection";
 import VideoSelection from "./components/features/widget/VideoSelection";
 import Dashboard from "./components/features/dashboard/Dashboard"
 
-// 4. Feature: Dashboard
 import WidgetPreview from "./components/features/widget/WidgetPreview";
 import UploadVideoPage from "./components/features/library/UploadVideoPage";
 import WidgetsDashboard from "./components/features/widgets-manager/WidgetsDashboard";
@@ -23,7 +18,7 @@ import NotFound from "./components/NotFound";
 
 export default function App() {
   return (
-    <BrowserRouter basename="/shoppable-reels">
+    <BrowserRouter>
       <Routes>
         <Route element={<AppLayout />}>
           

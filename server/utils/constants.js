@@ -7,7 +7,8 @@ const PlatformSession = require('../models/PlatformSession');
 const deriveBunnyUrls = (videoId) => ({
       previewAnimationUrl: `https://${process.env.BUNNY_STREAM_ZONE}/${videoId}/preview.webp`,
       thumbnailUrl: `https://${process.env.BUNNY_STREAM_ZONE}/${videoId}/thumbnail.jpg`,
-      url: `https://iframe.mediadelivery.net/embed/${process.env.BUNNY_LIBRARY_ID}/${videoId}`
+      url: `https://iframe.mediadelivery.net/embed/${process.env.BUNNY_LIBRARY_ID}/${videoId}`,
+      hlsUrl: `https://${process.env.BUNNY_STREAM_ZONE}/${videoId}/playlist.m3u8`
 });
 
 const asyncHandler = (fn) => {
@@ -18,27 +19,27 @@ const asyncHandler = (fn) => {
 }
 
 // validator 
-const handleVideoCreation = (data, site) => {
-      if (!data.videoId) {
-            throw { status: 400, message: "Missing videoId for video media" };
+const handleVideoCreation = (data, site, res) => {
+      const safeTitle = data.title ? data.title : "Untitled Video";
+
+      if (!data.videoId || !data.libraryId || !data.collectionId || !data.duration || !site) {
+            throw new Error("information is missing for creating the video document!");
       }
 
-      if (!site) {
-            return sendResponse.error(res, "MISSING_SITE", "site not found is session", 404)
-      }
-
-      const { previewAnimationUrl, thumbnailUrl, url } = deriveBunnyUrls(data.videoId);
-
-      const cleanTitle = data.title.trim().replace(/[^a-zA-Z0-9]/g, "-");
+      const { previewAnimationUrl, thumbnailUrl, url, hlsUrl } = deriveBunnyUrls(data.videoId);
+      const cleanTitle = safeTitle.trim().replace(/[^a-zA-Z0-9]/g, "-");
 
       return new Video({
             title: cleanTitle,
             bunnyVideoId: data.videoId,
-            libraryId: process.env.BUNNY_LIBRARY_ID,
+            libraryId: data.libraryId,
+            collectionId: data.collectionId,
             previewAnimationUrl,
             thumbnailUrl,
             url,
             site,
+            hlsUrl,
+            duration: data.duration,
 
             // product
             productId: data.productId,
