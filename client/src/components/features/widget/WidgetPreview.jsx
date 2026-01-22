@@ -1,26 +1,22 @@
 import React, { useState } from 'react';
 import { ArrowLeft, ExternalLink, Plus, Play, Loader2, Check } from 'lucide-react';
-import '../widgets-manager/WidgetManager'; // Ensure this has your styles
+import '../widgets-manager/WidgetManager';
 import Button from '../../sharable/Button';
 import { useNavigate } from 'react-router-dom';
-import List from './List'; // Your existing List component
+import List from './List';
 import { useWidgetStore } from '../../../stores/useWidgetStore';
-import useCreateWidget from './hooks/useCreateWidget'; // Your API Hook
+import useCreateWidget from './hooks/useCreateWidget';
 import { Package } from 'lucide-react';
 
 const WidgetPreview = ({ onBack }) => {
     const navigate = useNavigate();
     const [selectedVideo, setSelectedVideo] = useState(null);
 
-    // --- 1. ZUSTAND STORE ---
-    // We grab the full objects directly from the store (Client-side draft)-
     const selectedWidget = useWidgetStore((state) => state.selectedWidget);
     const heading = useWidgetStore((state) => state.heading);
     const selectedMediaItems = useWidgetStore((state) => state.selectedMediaItems);
     const toggleMediaSelection = useWidgetStore((state) => state.toggleMediaSelection);
     const isLive = useWidgetStore((state) => state.isLive);
-
-    const resetWizard = useWidgetStore((state) => state.resetWizard);
 
     const setIsLive = useWidgetStore((state) => state.setIsLive);
 

@@ -2,12 +2,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { apiRequest } from '../../../../service/apiRequest';
+import { useWidgetStore } from '../../../../stores/useWidgetStore';
 
-const toggleLive = async ({ widgetId, isLive }) => {
+const toggleLive = async ({ widgetId }) => {
     return apiRequest({
-        method: "POST",
+        method: "PATCH",
         url: `/widgets/goLive/${widgetId}`,
-        data: { isLive }
     })
 }
 
@@ -18,9 +18,22 @@ export const useToggleLive = () => {
         mutationFn: toggleLive,
 
         onSuccess: (data, variables) => {
-            const statusText = variables.isLive ? "Live" : "Offline";
-            toast.success(`Widget is now ${statusText}!`);
-            queryClient.invalidateQueries({ queryKey: ['live'] });
+            console.log(data)
+            
+            const { widgetId } = variables;
+            const { widgetsData, setWidgetsData } = useWidgetStore.getState();
+
+            const updatedWidgets = widgetsData.map(widget => {
+                if (widget._id === widgetId) {
+                    return { ...widget, isLive: !widget.isLive };
+                }
+                return widget;
+            });
+            setWidgetsData(updatedWidgets);
+
+            const statusMsg = data?.meta || "Status Updated Successfully";
+            toast.success(statusMsg)
+            queryClient.invalidateQueries({ queryKey: ['widgets'] });
         },
 
         onError: (error) => {

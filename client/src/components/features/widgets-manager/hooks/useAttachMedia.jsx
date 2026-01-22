@@ -20,8 +20,8 @@ export const useAttachMedia = () => {
 
         onSuccess: (data) => {
             toast.success("Media attached successfully!");
-            queryClient.invalidateQueries({ queryKey: ['attach-media'] });
-            resetAttachMedias()
+            queryClient.invalidateQueries({ queryKey: ['widgets'] });
+            resetAttachMedias();
         },
 
         onError: (error) => {

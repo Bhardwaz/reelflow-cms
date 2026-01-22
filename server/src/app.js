@@ -13,8 +13,7 @@ const verifyHmac = require("../utils/joonwebHelper");
 const sendResponse = require("../utils/sendResponse")
 
 app.use(cors({
-  origin: 'true',
-  credentials: true,
+  origin: '*',
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: "*",
 }));

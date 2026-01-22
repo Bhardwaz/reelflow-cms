@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import Button from '../../sharable/Button';
-import './Dashboard.css'; 
+import './Dashboard.css';
 import {
     Info,
     User,
     ShoppingCart,
-    Video, 
+    Video,
     Sparkles,
     Plus,
     AlertTriangle,
@@ -21,30 +21,37 @@ import { useState, useEffect } from 'react';
 
 const Dashboard = () => {
     const { data: siteData } = useSiteData();
-    const { data: dashboardView, isLoading } = useViews(); 
+    const { data: dashboardView, isLoading } = useViews();
     const navigate = useNavigate();
-    
-    const monthlyViews = dashboardView?.monthlyViews || 0;
-    const totalViews = dashboardView?.totalViews || 0;
-    const totalVideos = dashboardView?.videoCount || 0;
-    
-    const planLimit = siteData?.plan?.monthlyLimit || 2000; // Default 2000 views/month
+
+    useEffect(() => {
+        console.log(dashboardView, "dashboard data now");
+    }, [dashboardView])
+
+    const monthlyViews = dashboardView?.data?.totalViews || 0;
+    const totalViews = dashboardView?.data?.totalViews || 0;
+    const totalVideos = dashboardView?.data?.videoCount || 0;
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const viewsUsedToday = dashboardView?.data?.chartData?.find(item => item.date === todayStr)?.views || 0;
+
+    const planLimit = siteData?.plan?.monthlyLimit || 500;
     const usagePercentage = isLoading ? 0 : Math.min((monthlyViews / planLimit) * 100, 100);
-    
+
     const isWarning = usagePercentage >= 80 && usagePercentage < 95;
     const isCritical = usagePercentage >= 95;
-    
+
     const [currentMonth, setCurrentMonth] = useState('');
     const [dateRange, setDateRange] = useState('');
-    
+
     useEffect(() => {
         const now = new Date();
         const month = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
         setCurrentMonth(month);
-        
+
         const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
         const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        
+
         const formatDate = (date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         setDateRange(`(${formatDate(firstDay)} - ${formatDate(lastDay)})`);
     }, []);
@@ -55,30 +62,29 @@ const Dashboard = () => {
         return num.toString();
     };
 
-    // Get progress bar color based on usage
     const getProgressColor = () => {
-        if (isLoading) return '#e5e7eb'; // Gray while loading
-        if (isCritical) return '#ef4444'; // Red for >95%
-        if (isWarning) return '#f59e0b'; // Orange for 80-95%
-        return '#10b981'; // Green for normal
+        if (isLoading) return '#e5e7eb';
+        if (isCritical) return '#ef4444';
+        if (isWarning) return '#f59e0b';
+        return '#10b981';
     };
 
-    // Get remaining views
-    const remainingViews = planLimit - monthlyViews;
-    const viewsUsedToday = dashboardView?.todayViews || 0;
+    const remainingViews = Math.max(0, planLimit - monthlyViews);
 
     return (
         <div className="container-wrapper">
             <main className="main-content">
-                {/* Header */}
                 <header className="dashboard-header">
-                    <div className="logo-icon">
-                        <Sparkles size={18} fill="white" />
+                    <div className='logo-container'>
+                        <div className="logo-icon">
+                            <Sparkles size={18} fill="white" />
+                        </div>
+                        <div>
+                            <h1>JoonWeb Shoppable Reel</h1>
+                            <p className="header-subtitle">Video Analytics Dashboard</p>
+                        </div>
                     </div>
-                    <div>
-                        <h1>JoonWeb Shoppable Reel</h1>
-                        <p className="header-subtitle">Video Analytics Dashboard</p>
-                    </div>
+
                     <div className="current-month">
                         <Calendar size={14} />
                         <span>{currentMonth}</span>
@@ -86,7 +92,6 @@ const Dashboard = () => {
                 </header>
 
                 <div className="content-stack">
-                    {/* Usage Card with Enhanced Progress Bar */}
                     <div className="card usage-card">
                         <div className="usage-header">
                             <div className="usage-title">
@@ -103,7 +108,7 @@ const Dashboard = () => {
                             <div className="usage-limit">{formatNumber(planLimit)} total views</div>
                             <div className="date-range-display">
                                 {dateRange}
-                                {viewsUsedToday > 0 && (
+                                {viewsUsedToday >= 0 && (
                                     <span className="today-views">
                                         <Zap size={12} />
                                         {formatNumber(viewsUsedToday)} today
@@ -112,30 +117,27 @@ const Dashboard = () => {
                             </div>
                         </div>
 
-                        {/* Enhanced Progress Bar */}
                         <div className="progress-container">
                             <div className="progress-bar-container">
-                                <div 
+                                <div
                                     className="progress-bar-fill"
-                                    style={{ 
+                                    style={{
                                         width: `${usagePercentage}%`,
                                         backgroundColor: getProgressColor(),
                                         transition: 'width 0.8s ease-out, background-color 0.3s ease'
                                     }}
                                 >
-                                    {/* Animated pulse effect for warning/critical */}
                                     {(isWarning || isCritical) && !isLoading && (
                                         <div className="progress-bar-pulse"></div>
                                     )}
                                 </div>
-                                
-                                {/* Percentage markers */}
+
                                 <div className="progress-markers">
                                     <div className="marker" style={{ left: '80%' }}>80%</div>
                                     <div className="marker" style={{ left: '95%' }}>95%</div>
                                 </div>
                             </div>
-                            
+
                             <div className="progress-labels">
                                 <span>0</span>
                                 <span className="current-usage">{formatNumber(monthlyViews)}</span>
@@ -143,14 +145,13 @@ const Dashboard = () => {
                             </div>
                         </div>
 
-                        {/* Warning Messages */}
                         {isWarning && !isLoading && (
                             <div className="warning-message warning">
                                 <AlertTriangle size={14} />
                                 <span>You've used {usagePercentage.toFixed(0)}% of your monthly views. Consider upgrading your plan.</span>
                             </div>
                         )}
-                        
+
                         {isCritical && !isLoading && (
                             <div className="warning-message critical">
                                 <AlertTriangle size={14} />
@@ -162,14 +163,14 @@ const Dashboard = () => {
                             <div className="metric">
                                 <div className="metric-label">Daily Average</div>
                                 <div className="metric-value">
-                                    {isLoading ? '...' : formatNumber(Math.round(monthlyViews / new Date().getDate()))}
+                                    {isLoading ? '...' : formatNumber(Math.round(monthlyViews / (new Date().getDate() || 1)))}
                                 </div>
                                 <div className="metric-sub">views/day</div>
                             </div>
                             <div className="metric">
                                 <div className="metric-label">Projected Month End</div>
                                 <div className="metric-value">
-                                    {isLoading ? '...' : formatNumber(Math.round(monthlyViews * 30 / new Date().getDate()))}
+                                    {isLoading ? '...' : formatNumber(Math.round(monthlyViews * 30 / (new Date().getDate() || 1)))}
                                 </div>
                                 <div className="metric-sub">estimated</div>
                             </div>
@@ -196,38 +197,39 @@ const Dashboard = () => {
                         </div>
 
                         <div className="stats-grid">
-                            <StatCard 
-                                icon={<Eye size={20} />} 
-                                label="Total Views" 
-                                value={formatNumber(totalViews)} 
+                            <StatCard
+                                icon={<Eye size={20} />}
+                                label="Total Views"
+                                value={formatNumber(totalViews)}
                                 isLoading={isLoading}
-                                trend={dashboardView?.viewTrend || 0}
+                                trend={0} // Can add trend logic later if API provides 'previousPeriodViews'
                                 description="All-time total"
                                 color="blue"
                             />
-                            
-                            <StatCard 
-                                icon={<User size={20} />} 
-                                label="This Month" 
-                                value={formatNumber(monthlyViews)} 
+
+                            <StatCard
+                                icon={<User size={20} />}
+                                label="This Month"
+                                value={formatNumber(monthlyViews)}
                                 isLoading={isLoading}
                                 description="Current billing cycle"
                                 color="green"
                             />
 
-                            <StatCard 
-                                icon={<Clock size={20} />} 
-                                label="Avg. Watch Time" 
-                                value={isLoading ? "..." : `${dashboardView?.avgWatchTime || 0}m`} 
+                            <StatCard
+                                icon={<Clock size={20} />}
+                                label="Avg. Watch Time"
+                                // Updated to map to dashboardView.data.averageWatchTime
+                                value={isLoading ? "..." : `${dashboardView?.data?.averageWatchTime || 0}m`}
                                 isLoading={isLoading}
                                 description="Per video view"
                                 color="purple"
                             />
 
-                            <StatCard 
-                                icon={<Video size={20} />} 
-                                label="Published Videos" 
-                                value={totalVideos.toLocaleString()} 
+                            <StatCard
+                                icon={<Video size={20} />}
+                                label="Published Videos"
+                                value={totalVideos.toLocaleString()}
                                 isLoading={isLoading}
                                 description="In your library"
                                 color="orange"
@@ -251,9 +253,9 @@ const Dashboard = () => {
                         </div>
 
                         <div className="videos-actions">
-                            <Button 
-                                variant="primary" 
-                                onClick={() => navigate('/create/widget')}
+                            <Button
+                                variant="primary"
+                                onClick={() => navigate('upload/media')}
                                 className="primary-action"
                             >
                                 <div className="icon-box">
@@ -262,12 +264,12 @@ const Dashboard = () => {
                                 Upload New Video
                             </Button>
                             <div className="secondary-actions">
-                                <Button variant="secondary">
+                                <Button variant="secondary" onClick={() => navigate('/library')}>
                                     Manage Videos
                                 </Button>
-                                <Button variant="outline">
+                                {/* <Button variant="outline">
                                     View Analytics
-                                </Button>
+                                </Button> */}
                             </div>
                         </div>
                     </div>
@@ -291,7 +293,7 @@ const StatCard = ({ icon, label, value, isLoading, trend, description, color = '
                 <div className={`stat-icon-wrapper ${colorClasses[color]}`}>
                     {icon}
                 </div>
-                {trend !== undefined && !isLoading && (
+                {trend !== undefined && !isLoading && trend !== 0 && (
                     <div className={`trend-badge ${trend > 0 ? 'trend-up' : 'trend-down'}`}>
                         <TrendingUp size={12} />
                         {Math.abs(trend)}%
@@ -303,7 +305,7 @@ const StatCard = ({ icon, label, value, isLoading, trend, description, color = '
                     <span className="stat-label">{label}</span>
                     <Info size={12} className="info-icon-small" />
                 </div>
-                
+
                 <div className="stat-value">
                     {isLoading ? (
                         <div className="skeleton-loading">

@@ -32,7 +32,7 @@ export default function App() {
              <Route path="preview" element={< WidgetPreview />} />
           </Route>
 
-          <Route path="video/pages" element={<WidgetsDashboard />} />
+          <Route path="/video/pages" element={<WidgetsDashboard />} />
 
           <Route path="upload/media" element={<UploadVideoPage />} />
 

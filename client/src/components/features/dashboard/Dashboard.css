@@ -2,12 +2,13 @@
 .container-wrapper {
     min-height: 100vh;
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    padding: 20px;
+    padding: 0px;
 }
 
 .main-content {
     max-width: 1200px;
     margin: 0 auto;
+    padding: 20px;
 }
 
 .dashboard-header {
@@ -16,6 +17,14 @@
     justify-content: space-between;
     padding: 24px 0 32px;
     position: relative;
+}
+
+.logo-container {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+    justify-content: flex-start;
 }
 
 .dashboard-header h1 {

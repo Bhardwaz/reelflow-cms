@@ -15,13 +15,13 @@ exports.createWidget = asyncHandler(async (req, res) => {
     }
 
     const { selectedWidget } = req.body
-    let userPlan = 'free'
+    // let userPlan = 'free'
 
-    try {
-        await checkLimits(site, userPlan, 'Widget')
-    } catch (error) {
-        return sendResponse.error(res, "PLAN_LIMIT_REACHED", error.message, 403);
-    }
+    // try {
+    //     await checkLimits(site, userPlan, 'Widget')
+    // } catch (error) {
+    //     return sendResponse.error(res, "PLAN_LIMIT_REACHED", error.message, 403);
+    // }
 
     const session = await mongoose.startSession();
     session.startTransaction();
@@ -208,17 +208,17 @@ exports.attachMediaToWidget = asyncHandler(async (req, res) => {
 
 exports.toggleLive = asyncHandler(async (req, res) => {
     const { widgetId } = req.params;
-    const { isLive } = req.body;
     if (!widgetId) return sendResponse.error(res, "NO_WIDGET", "provide an widget to go live", 400);
 
     const widget = await Widget.findById(widgetId)
     if (!widget) return sendResponse.error(res, "WIDGET_NOT_FOUND", "can not find any widget for this id", 404);
 
-    widget.isLive = isLive;
+    widget.isLive = !widget.isLive;
     widget.integrate = true;
+    await widget.save();
 
-    await widget.save()
-    return sendResponse.success(res, widget, "Widget is now Live", 200);
+    const message = widget.isLive ? "Widget is now Live" : "Widget is turned Off";
+    return sendResponse.success(res, widget, message, 200);
 })
 
 exports.getAllWidgets = asyncHandler(async (req, res) => {

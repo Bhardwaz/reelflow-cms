@@ -16,6 +16,6 @@ router.get('/getWidget', getWidgetWithProducts)
 
 router.post("/attach", auth, checkDbSession, attachMediaToWidget)
 
-router.post("/goLive/:widgetId", checkDbSession, toggleLive)
+router.patch("/goLive/:widgetId", checkDbSession, toggleLive)
 
 module.exports = router

@@ -5,36 +5,33 @@ const { getSiteAnalytics } = require("../controllers/dashboard.controller")
 const checkDbSession = require("../middleware/checkDbSession")
 const auth = require("../middleware/auth")
 const PlatformSession = require("../models/PlatformSession")
+const sendResposne = require("../utils/sendResponse");
 
 router.post('/video/updates', express.json(), bunnyWebhook);
 
 router.get('/media/views', auth, checkDbSession, async (req, res) => {
   try {
     const site = req.session.site;
-    if (!site) {
-      return res.status(403).json({ error: "Session not available" });
-    }
+    if (!site) return 
 
     const siteDoc = await PlatformSession.findOne({ site_domain: site });
-    if (!siteDoc) {
-      return res.status(404).json({ error: "Site not found" });
-    }
+    if (!siteDoc) return sendResposne.error(res, "SITE_NOT_FOUND", "site does not exist in db", 404);
 
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - 30);
 
-    console.log(startDate, endDate, "dates");
+    console.log(endDate, startDate, "end date and start date");
 
     let dashboardData = {
       totalViews: 0,
       videoCount: 0,
       totalWatchTime: 0,
+      averageWatchTime: 0,
       recentVideos: [],
-      topVideos: []
+      topVideos: [],
+      chartData: [],
     };
-    
-    console.log(dashboardData, "dashboard data obbjec initialized");
 
     if (siteDoc.bunnyCollectionId) {
       const analytics = await getSiteAnalytics(
@@ -44,28 +41,37 @@ router.get('/media/views', auth, checkDbSession, async (req, res) => {
       );
 
       const topVideos = [...analytics.videos]
-        .sort((a, b) => b.totalViews - a.totalViews)
+        .sort((a, b) => b.stats.views - a.stats.views)
         .slice(0, 5)
         .map(video => ({
-          id: video.videoId,
+          id: video.guid,
           title: video.title,
-          views: video.totalViews,
-          watchTime: Math.round(video.totalWatchTime / 60)
+          views: video.stats.views, 
+          watchTime: Math.round(video.stats.watchTime / 60),
+          thumbnail: `https://${process.env.BUNNY_PULL_ZONE}/${video.guid}/${video.thumbnailFileName}`
         }));
 
-      const recentVideos = analytics.videos
-        .filter(video => {
-          return true; // Placeholder
-        })
-        .slice(0, 3);
+      const recentVideos = [...analytics.videos]
+        .sort((a, b) => new Date(b.dateUploaded) - new Date(a.dateUploaded))
+        .slice(0, 5)
+        .map(video => ({
+          id: video.guid,
+          title: video.title,
+          date: video.dateUploaded,
+          views: video.stats.views,
+          thumbnail: `https://${process.env.BUNNY_PULL_ZONE}/${video.guid}/${video.thumbnailFileName}`
+        }));
 
       dashboardData = {
-        totalViews: analytics.totalViews,
-        videoCount: analytics.totalVideos,
-        totalWatchTime: Math.round(analytics.totalWatchTime / 3600),
-        averageWatchTime: Math.round(analytics.averageWatchTime / 60),
+        totalViews: analytics.summary.totalViews,
+        videoCount: analytics.summary.totalVideos,
+        totalWatchTime: analytics.summary.totalWatchTimeMins,
+        averageWatchTime: analytics.summary.totalVideos > 0 
+            ? Math.round(analytics.summary.totalWatchTimeMins / analytics.summary.totalVideos) 
+            : 0,
         topVideos,
         recentVideos,
+        chartData: analytics.chartData,
         collectionId: siteDoc.bunnyCollectionId
       };
     }
@@ -76,7 +82,7 @@ router.get('/media/views', auth, checkDbSession, async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Dashboard analytics error:", error);
+    console.error("Dashboard Controller Error:", error);
     res.status(500).json({ 
       error: "Failed to fetch dashboard analytics",
       message: error.message 

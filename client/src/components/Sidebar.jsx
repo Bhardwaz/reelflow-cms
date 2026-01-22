@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import "./Sidebar.css";
+import JoonWebLogo from "./sharable/JoonWebLogo";
 
 function Sidebar() {
   // We use this to manually check if we are inside the "Creation Flow"
@@ -8,10 +9,11 @@ function Sidebar() {
 
   return (
     <div className="sidebar">
-      <h1 className="sidebar-title">JoonWeb</h1>
+        <JoonWebLogo />
+       {/* //<h1 className="sidebar-title"></h1> */}
 
       <div className="sidebar-nav">
-        {/* 1. HOME (Now loads your Library/Reels) */}
+      
         <NavLink
           to="/"
           end
@@ -26,14 +28,14 @@ function Sidebar() {
             - Points to the start of the flow: /create/widget
             - Stays ACTIVE if you are on /create/library or /create/manager
         */}
-        <NavLink
+        {/* <NavLink
           to="/create/widget"
           className={() =>
             `nav-item ${isWidgetSection ? "active" : ""}`
           }
         >
           Widget
-        </NavLink>
+        </NavLink> */}
 
         <NavLink
           to="/video/pages"
@@ -41,7 +43,7 @@ function Sidebar() {
             `nav-item ${isActive ? "active" : ""}`
           }
         >
-          Pages
+          Widgets
         </NavLink>
 
         {/* 3. DASHBOARD (The Table View) */}
@@ -53,6 +55,15 @@ function Sidebar() {
         >
           Library
         </NavLink>
+
+        {/* <NavLink
+          to="/upload/media"
+          className={({ isActive }) =>
+            `nav-item ${isActive ? "active" : ""}`
+          }
+        >
+          Upload 
+        </NavLink> */}
       </div>
     </div>
   );

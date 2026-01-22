@@ -42,21 +42,24 @@ export const useWidgetStore = create(
           selectedWidgetId: state.selectedWidgetId === widgetId ? null : state.selectedWidgetId
         })),
 
-        removeMediaFromWidget: (widgetId, mediaId) => set((state) => {
-          const updatedWidgets = state.widgetsData.map((widget) => {
-            if (widget._id === widgetId) {
-              return {
-                ...widget,
-                items: widget.items.filter((item) => {
-                  const currentItemId = item.mediaId?._id || item.mediaId;
-                  return currentItemId !== mediaId;
-                })
-              };
-            }
-            return widget;
-          });
-          return { widgetsData: updatedWidgets };
-        }),
+          removeMediaFromWidget: (widgetId, mediaId) => set((state) => {
+            console.log(widgetId, mediaId, "in zustand widget id and mediaid")
+            if (!mediaId) return state;
+
+            const updatedWidgets = state.widgetsData.map((widget) => {
+              if (widget._id === widgetId) {
+                return {
+                  ...widget,
+                  items: widget.items.filter((item) => {
+                    const innerId = item?._id;
+                    return innerId !== mediaId
+                  })
+                };
+              }
+              return widget;
+            });
+            return { widgetsData: updatedWidgets };
+          }),
 
         toggleMediaSelection: (mediaItem) => set((state) => {
           const exists = state.selectedMediaItems.some((item) => item._id === mediaItem._id);

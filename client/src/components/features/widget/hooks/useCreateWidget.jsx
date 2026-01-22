@@ -26,12 +26,12 @@ import { useNavigate } from 'react-router-dom';
         toast.success("Widget created successfully!");
         queryClient.invalidateQueries({ queryKey: ['widgets'] });
         resetWizard()
-        navigate('/');
+        navigate('/video/pages');
       },
 
       onError: (error) => {
         console.error("Failed to create widget:", error);
-        const message = error.response?.data?.message || "Failed to create widget";
+        const message = error.response?.data?.message || error?.code || "Failed to create widget";
         toast.error(message);
       }
     });

@@ -178,8 +178,8 @@ exports.deleteMedia = asyncHandler(async (req, res) => {
     if (!media) return sendResponse.error(res, "NOT_FOUND", "Media not found", 404);
 
     // 2. SOFT DELETE (Immediate UI Update)
-    const softDeletedMedia = await Media.findByIdAndUpdate(
-        _id, 
+    const softDeletedMedia = await Media.findOneAndUpdate(
+        { _id, site},
         { isDeleted: true, deletedAt: new Date() },
         { new: true }
     );

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
-  ArrowLeft, ExternalLink, GripVertical, Eye, Trash2, Plus, Play
+  ArrowLeft, ExternalLink, GripVertical, Eye, Trash2, Plus, Play,
+  Power, Video 
 } from 'lucide-react';
 import './WidgetManager.css';
 import Button from '../../sharable/Button';
@@ -11,65 +12,42 @@ import useRemoveMedia from '../widget/hooks/useRemoveMedia';
 import useDeleteWidget from '../widget/hooks/useDeleteWidget';
 import useToggleLive from './hooks/useToggleLive';
 
+import Empty from '../../sharable/Empty'; 
+
 const WidgetManager = ({ onBack }) => {
   const [activeTab, setActiveTab] = useState('carousel');
-  const [isLive, setIsLive] = useState(true);
-  const [videos, setVideos] = useState([]);
-  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
   const navigate = useNavigate()
 
   const selectedWidgetId = useWidgetStore((state) => state.selectedWidgetId);
-  const widgetsData = useWidgetStore(state => state.widgetsData)
-  
-   if (!selectedWidgetId) { navigate('video/pages', { replace: true })}
-
-  // current widget
+  const widgetsData = useWidgetStore(state => state.widgetsData);
   const currentWidget = widgetsData?.find(widget => widget._id === selectedWidgetId);
   const filteredItems = currentWidget?.items.filter(item => !item.mediaId.isDeleted)
 
   // mutate for removing media 
   const { mutate: removeMedia, isPending: isRemoveMediaPending } = useRemoveMedia()
   const { mutate: deleteWidget, isPending: isDeletingWidget } = useDeleteWidget();
+  const { mutate: toggleLive, isLoading: isGoingLive, error } = useToggleLive()
 
   useEffect(() => {
-    if (currentWidget) {
-      setIsLive((currentWidget?.isLive && currentWidget?.integrate) || false)
-      setActiveTab(currentWidget?.widgetType?.toLowerCase() || 'carousel');
-      
-      const mappedVideos = filteredItems.map(item => {
-        const media = item.mediaId || {}
+    if (!selectedWidgetId) { navigate('/video/pages', { replace: true }) }
+  }, [selectedWidgetId, navigate]);
 
-        return {
-          _id: media._id || item._id,
-          title: media.title || 'Untitled Video',
-          product: media.productName || "No Product Linked",
-          thumb: media.thumbnailUrl || '#e5e7eb',
-          preview: media.previewAnimationUrl,
-          originalItemId: item._id,
-          url: media.url,
-          mediaType: media.mediaType,
-          productImage: media?.productImage
-        }
-      }) || []
-      setVideos(mappedVideos)
-    }
-  }, [currentWidget])
-
-  const handlePreviewClick = (e, video) => {
+  const handlePreviewClick = (e, item) => {
     e.stopPropagation();
-    setSelectedVideo(video);
+    setSelectedItem(item);
   };
 
-  const handleDelete = (e, videoId) => {
+  const handleDelete = (e, videoId, zustandId) => {
     e.stopPropagation();
     const confirmed = window.confirm("Are you sure you want to delete this video?");
     if (confirmed) {
-      setVideos((prev) => prev.filter(v => v._id !== videoId));
-      if (selectedVideo?._id === videoId) setSelectedVideo(null);
+      if (selectedItem?._id === videoId) setSelectedItem(null);
 
       removeMedia({
         widgetId: selectedWidgetId,
-        mediaId: videoId
+        mediaId: videoId,
+        zustandId
       })
     }
   };
@@ -83,6 +61,8 @@ const WidgetManager = ({ onBack }) => {
     );
 
     if (confirmed) {
+      console.log("deleting the widget");
+
       deleteWidget(widgetId, {
         onSuccess: () => {
           navigate("/video/pages")
@@ -91,20 +71,16 @@ const WidgetManager = ({ onBack }) => {
     }
   }
 
-  const { mutate: toggleLive, isLoading: isGoingLive, error } = useToggleLive()
-
   const handleLive = () => {
     if (!selectedWidgetId) return
-    const newStatus = !isLive;
     toggleLive(
       {
         widgetId: selectedWidgetId,
-        isLive: newStatus
       });
   }
-
-  console.log(currentWidget, "currnt widget")
-
+  
+  if (!selectedWidgetId) return null;
+  
   if (!currentWidget) {
     return (
       <div className="container-wrapper">
@@ -118,6 +94,10 @@ const WidgetManager = ({ onBack }) => {
     );
   }
 
+  console.log(widgetsData, "widgets data")
+
+  console.log(filteredItems, "filtered items")
+   
   return (
     <div className="container-wrapper">
       <div className="main-content">
@@ -133,9 +113,16 @@ const WidgetManager = ({ onBack }) => {
               Delete this widget
             </Button>
 
-            <Button onClick={() => handleLive()}>
-                Toggle
-              <ExternalLink size={16} />
+            <Button
+              onClick={() => handleLive()}
+              disabled={isGoingLive} //
+              className={isGoingLive ? "opacity-50 cursor-not-allowed" : ""}
+            >
+              <Power
+                size={16}
+                color={isGoingLive ? "#9ca3af" : (currentWidget?.isLive ? "#9ca3af" : "#22c55e")}
+              />
+              {isGoingLive ? "Updating..." : (currentWidget?.isLive ? "Turn Off" : "Turn On")}
             </Button>
           </div>
         </div>
@@ -151,37 +138,12 @@ const WidgetManager = ({ onBack }) => {
                 // Optional: Disable clicking if we want tabs to represent ONLY the current widget type
                 // onClick={() => setActiveTab('carousel')}
                 >
-                  Carousel <span className="vm-tab-count">{activeTab === 'carousel' ? videos.length : 0}</span>
+                  Carousel <span className="vm-tab-count">{activeTab === 'carousel' ? filteredItems.length : 0}</span>
                 </div>
-                {/* <div
-                  className={`vm-tab ${activeTab === 'story' ? 'active' : ''}`}
-                // onClick={() => setActiveTab('story')}
-                >
-                  Story <span className="vm-tab-count">{activeTab === 'story' ? videos.length : 0}</span>
-                </div> */}
-                {/* <div
-                  className={`vm-tab ${activeTab === 'floating' ? 'active' : ''}`}
-                // onClick={() => setActiveTab('floating')}
-                >
-                  Floating <span className="vm-tab-count">{activeTab === 'floating' ? videos.length : 0}</span>
-                </div> */}
               </div>
 
               {/* Action Bar */}
               <div className="vm-action-bar">
-                <div className="vm-toggle-wrapper">
-                  <span className={`vm-toggle-label ${isLive ? 'live' : 'off'}`}>
-                    {isLive ? 'Live' : 'Inactive'}
-                  </span>
-                  <label className="vm-switch">
-                    <input
-                      type="checkbox"
-                      checked={isLive}
-                      onChange={() => setIsLive(!isLive)}
-                    />
-                    <span className="vm-slider"></span>
-                  </label>
-                </div>
 
                 <Button onClick={() => navigate('/attach/media')}>
                   <div className='icon-box'> <Plus size={16} /> </div>
@@ -193,20 +155,27 @@ const WidgetManager = ({ onBack }) => {
 
             {/* Draggable List */}
             <div className="vm-list">
-              {videos.map((video) => (
+              {filteredItems?.map((item) => (
                 <List
-                  handlePreviewClick={(e) => handlePreviewClick(e, video)}
-                  selectedVideo={selectedVideo}
-                  video={video}
+                  handlePreviewClick={(e) => handlePreviewClick(e, item)}
+                  selectedItem={selectedItem}
+                  item={item}
                   handleDelete={handleDelete}
-                  key={video._id}
+                  key={item._id}
                 />
               ))}
 
-              {videos.length === 0 && (
-                <div className="text-center py-8 text-gray-400 border border-dashed rounded-lg">
-                  No videos in this widget. Click "Add more videos".
-                </div>
+              {filteredItems?.length === 0 && (
+                 <div className="mt-8">
+                    <Empty 
+                        variant="small"
+                        icon={Video}
+                        title="No videos attached"
+                        description="This widget is empty. Attach videos from your library."
+                        actionLabel="Attach Videos"
+                        onAction={() => navigate('/attach/media')}
+                    />
+                 </div>
               )}
             </div>
 
@@ -214,27 +183,25 @@ const WidgetManager = ({ onBack }) => {
 
           {/* RIGHT PANEL: PREVIEW */}
           <div className="vm-preview-card">
-            {selectedVideo ? (
+            {selectedItem ? (
               <div className="vm-preview-content">
 
                 <div className="vm-preview-video">
 
-                  {/* LOGIC: Detect Bunny Embed (Iframe) vs Direct Video vs Image */}
-                  {(selectedVideo.url?.includes('iframe') || selectedVideo.url?.includes('mediadelivery')) ? (
-                    // 1. IFRAME (For Bunny Embed URLs)
+                  {(selectedItem?.mediaId?.url?.includes('iframe') || selectedItem?.mediaId?.url?.includes('mediadelivery')) ? (
                     <iframe
-                      src={selectedVideo.url}
+                      src={selectedItem?.mediaId?.url}
                       className="vm-media-element"
                       loading="lazy"
                       style={{ border: 'none', width: '100%', height: '100%' }}
                       allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
                       allowFullScreen={true}
                     ></iframe>
-                  ) : selectedVideo.mediaType === 'Video' ? (
+                  ) : selectedItem?.mediaId?.mediaType === 'Video' ? (
                     // 2. VIDEO TAG (For .mp4 / Direct URLs)
                     <video
-                      src={selectedVideo.url}
-                      poster={selectedVideo.thumb}
+                      src={selectedItem?.mediaId?.url}
+                      poster={selectedItem?.mediaId?.thumb}
                       className="vm-media-element"
                       autoPlay
                       muted
@@ -244,16 +211,16 @@ const WidgetManager = ({ onBack }) => {
                   ) : (
                     // 3. IMAGE TAG Fallback
                     <img
-                      src={selectedVideo.url || selectedVideo.thumb}
-                      alt={selectedVideo.title}
+                      src={selectedItem?.mediaId?.url}
+                      alt={selectedItem?.mediaId?.title}
                       className="vm-media-element"
                     />
                   )}
 
                   {/* Play Icon Overlay (Only for Direct Videos, NOT Iframes) */}
-                  {selectedVideo.mediaType === 'VIDEO' &&
-                    !selectedVideo.url?.includes('iframe') &&
-                    !selectedVideo.url?.includes('mediadelivery') && (
+                  {selectedItem?.mediaId?.mediaType === 'Video' &&
+                    !selectedItem?.mediaId?.url?.includes('iframe') &&
+                    !selectedItem?.mediaId?.url?.includes('mediadelivery') && (
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                         <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
                           <Play size={20} fill="white" stroke="none" opacity={0.8} />
@@ -264,8 +231,8 @@ const WidgetManager = ({ onBack }) => {
                 </div>
 
                 <div className="vm-preview-details">
-                  <h3>{selectedVideo.title}</h3>
-                  <p>Linked Product: {selectedVideo.product}</p>
+                  <h3>{selectedItem?.mediaId?.title}</h3>
+                  <p>Linked Product: {selectedItem?.mediaId?.product}</p>
                   <div className="mt-4 p-2 bg-gray-50 text-xs text-gray-500 rounded border">
                     This is a preview of how the media appears in the sidebar widget.
                   </div>

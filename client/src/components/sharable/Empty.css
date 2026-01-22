@@ -1,0 +1,107 @@
+/* EmptyState.css */
+
+:root {
+  --es-bg-subtle: #f9fafb;
+  --es-border: #e5e7eb;
+  --es-text-primary: #111827;
+  --es-text-secondary: #6b7280;
+  --es-accent: #6366f1; /* Indigo - Change this to your brand color */
+  --es-accent-hover: #4f46e5;
+  --es-icon-bg: #e0e7ff;
+  --es-icon-color: #4338ca;
+}
+
+.empty-state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 2rem;
+  background-color: #fff;
+  border: 1px dashed var(--es-border); /* Dashed border suggests "fill me" */
+  border-radius: 12px;
+  width: 100%;
+  height: 100%;
+  min-height: 300px; /* Ensures it takes up space */
+  box-sizing: border-box;
+  animation: es-fade-in 0.4s ease-out;
+}
+
+/* Variant for smaller spaces (like inside a small widget card) */
+.empty-state-container.small {
+  padding: 2rem 1rem;
+  min-height: 150px;
+  border: none;
+  background: transparent;
+}
+
+.empty-state-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: var(--es-bg-subtle);
+  color: var(--es-text-secondary);
+  margin-bottom: 1.5rem;
+  transition: transform 0.3s ease;
+}
+
+/* Add a nice hover effect */
+.empty-state-container:hover .empty-state-icon-wrapper {
+  transform: scale(1.05);
+  background-color: var(--es-icon-bg);
+  color: var(--es-icon-color);
+}
+
+.empty-state-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--es-text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.empty-state-description {
+  font-size: 0.95rem;
+  color: var(--es-text-secondary);
+  margin: 0 0 2rem 0;
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+.empty-state-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #fff;
+  background-color: var(--es-accent);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.empty-state-button:hover {
+  background-color: var(--es-accent-hover);
+}
+
+/* Animation */
+@keyframes es-fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Mobile Adjustments */
+@media (max-width: 600px) {
+  .empty-state-container {
+    padding: 3rem 1rem;
+  }
+  .empty-state-title {
+    font-size: 1.1rem;
+  }
+}

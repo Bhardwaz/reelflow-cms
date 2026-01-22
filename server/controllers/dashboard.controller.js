@@ -1,4 +1,3 @@
-// utils/siteAnalytics.js
 const axios = require('axios');
 
 const SHARED_LIBRARY_ID = process.env.BUNNY_LIBRARY_ID;
@@ -7,70 +6,99 @@ const SHARED_LIBRARY_API_KEY = process.env.BUNNY_STREAM_API_KEY;
 const getSiteAnalytics = async (collectionId, startDate, endDate) => {
   try {
     const videosRes = await axios.get(
-      `https://video.bunnycdn.com/library/${SHARED_LIBRARY_ID}/videos?collection=${collectionId}`,
+      `https://video.bunnycdn.com/library/${SHARED_LIBRARY_ID}/videos`,
       {
+        params: { collection: collectionId },
         headers: {
           AccessKey: SHARED_LIBRARY_API_KEY,
           "Content-Type": "application/json",
         }
       }
     );
-    
+
     const videos = videosRes.items || videosRes.data.items || [];
-     
-    console.log(startDate, endDate, "last datess");
 
-    let siteAggregatedChart = {};
-
-    // video guid === d8c65d0f-75bd-4f05-afef-8bb35a98d048
+    let totalVideos = videos.length;
+    let totalDurationSecs = 0;
+    let totalViewsPeriod = 0;
+    let totalWatchTimeSecs = 0;
+    let siteAggregatedChart = {}; 
 
     const analyticsPromises = videos.map(async (video) => {
-      try {
-        const statsRes = await axios.get(
-          `https://video.bunnycdn.com/library/${SHARED_LIBRARY_ID}/statistics`,
-          {
-            params: {
-                      dateFrom: dateFrom,
-                      dateTo: dateTo,
-                      videoGuid: video.guid
+        totalDurationSecs += video.length;
+
+        try {
+            const statsRes = await axios.get(
+                `https://video.bunnycdn.com/library/${SHARED_LIBRARY_ID}/statistics`,
+                {
+                    params: {
+                        dateFrom: startDate,
+                        dateTo: endDate,
+                        videoGuid: video.guid
+                    },
+                    headers: {
+                        AccessKey: SHARED_LIBRARY_API_KEY,
+                        "Content-Type": "application/json",
                     }
-          },
-          {
-            headers: {
-              AccessKey: SHARED_LIBRARY_API_KEY,
-              "Content-Type": "application/json",
-            }
-          }
-        );
-        
-       return statsRes.data.viewsChart;
-      } catch (error) {
-        console.error(`Error fetching stats for video ${video.guid}:`, error.message);
-        return {};
-      }
+                }
+            );
+            return statsRes.data;
+        } catch (error) {
+            console.error(`Stats error for ${video.guid}:`, error.message);
+            return null;
+        }
     });
 
-    const allVideoStats = (await Promise.all(analyticsPromises)).filter(Boolean);
+    const statsResults = await Promise.all(analyticsPromises);
 
-    allVideoStats.forEach(videoStat => {
-      for(const [date, views] of Object.entries(videoStat)){
-           if(!siteAggregatedChart[date]){
-            siteAggregatedChart[date] = 0
-           }
-           siteAggregatedChart[date] += views;
-      }
-    })
+    const enrichedVideos = videos.map((video, index) => {
+        const stat = statsResults[index];
+        let viewsInPeriod = 0;
+        let watchTimeInPeriod = 0;
 
-    const finalDashboardData = Object.entries(siteAggregatedChart).map(([date, totalViews]) => (
-      {
-       date: date.split('T')[0],
-       views: totalViews
-    })).sort((a, b) => new Date(a.date) - new Date(b.date));
+        if (stat) {
+            viewsInPeriod = Object.values(stat.viewsChart).reduce((a, b) => a + b, 0);
+            watchTimeInPeriod = Object.values(stat.watchTimeChart).reduce((a, b) => a + b, 0);
 
-    return finalDashboardData
+            totalViewsPeriod += viewsInPeriod;
+            totalWatchTimeSecs += watchTimeInPeriod;
+
+            Object.entries(stat.viewsChart).forEach(([dateString, viewCount]) => {
+                const dateKey = dateString.split('T')[0];
+                if (!siteAggregatedChart[dateKey]) siteAggregatedChart[dateKey] = 0;
+                siteAggregatedChart[dateKey] += viewCount;
+            });
+        }
+
+        return {
+            ...video,
+            stats: {
+                views: viewsInPeriod,
+                watchTime: watchTimeInPeriod
+            }
+        };
+    });
+
+    const chartDataArray = Object.entries(siteAggregatedChart)
+      .map(([date, totalViews]) => ({
+        date: date,
+        views: totalViews
+      }))
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    return {
+        summary: {
+            totalVideos,
+            totalViews: totalViewsPeriod,
+            totalDurationMins: Math.floor(totalDurationSecs / 60),
+            totalWatchTimeMins: Math.floor(totalWatchTimeSecs / 60),
+        },
+        videos: enrichedVideos,
+        chartData: chartDataArray
+    };
 
   } catch (error) {
-    console.error("Error fetching site analytics:", error.response?.data || error.message);
+    console.error("Helper Error:", error.message);
     throw error;
   }
 };

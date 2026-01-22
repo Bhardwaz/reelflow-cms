@@ -18,7 +18,7 @@ export const useSaveMedia = () => {
     retry: 1,
     
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['media'] });
+      queryClient.invalidateQueries({ queryKey: ['videos'] });
     },
   });
 };

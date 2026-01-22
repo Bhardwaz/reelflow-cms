@@ -26,7 +26,8 @@ const UploadVideoPage = () => {
   const handleProductModal = async () => {
     if (!app) return;
     const Component = app.actions.Components.create(app)
-    const data = await Component.show('ProductPicker');
+    const data = await Component.show('ProductPicker', [], { isSingle:true });
+    
     if (data?.length > 1) {
       toast.error("You can only select single product with single video !")
     }
@@ -113,7 +114,7 @@ const UploadVideoPage = () => {
       />
 
       <div className="page-header">
-        <h1 className="header-title">Add New Video</h1>
+        <h1 className="header-title">Add New Media</h1>
 
         <div className="header-actions">
           <Button variant="secondary" onClick={() => navigate(-1)}>Back</Button>
