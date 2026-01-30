@@ -208,6 +208,26 @@ exports.deleteMedia = asyncHandler(async (req, res) => {
     );
 });
 
+exports.changeProduct = asyncHandler(async (req, res) => {
+       const site = req.session.site 
+       const mediaId = req.params?.mediaId
+       const { productName, productImage, productId } = req.body;
+
+       const media = await Media.findOne({ site, _id: mediaId })
+
+       if(!media) {
+         return sendResponse.error(res, "NO_MEDIA_EXIST", "media might be deleted or not exists", 404);
+       }
+        
+       media.productName = productName;
+       media.productImage = productImage,
+       media.productId = productId
+       
+       await media.save()
+
+       return sendResponse.success(res, "Product Changed Successfully", {}, 200);
+})
+
 exports.getProducts = async (req, res) => {
     try {
         const access_token = req.accessToken || req.session.access_token

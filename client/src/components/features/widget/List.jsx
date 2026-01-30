@@ -1,15 +1,15 @@
 import '../widgets-manager/WidgetManager.css';
 import { GripVertical, Eye, Trash2 } from "lucide-react"
 
-const List = ({ handlePreviewClick, selectedItem, item, handleDelete }) => {
-    if (item?.mediaId?.isDeleted) return
-    const isSelected = selectedItem?._id === item._id;
-
-    console.log(item._id, "video id")
+const List = ({ video, selectedItem, handleDelete, handlePreviewClick, setSelectedVideo }) => {
+    if (video?.mediaId?.isDeleted) return
+    const isSelected = selectedItem?._id === video?._id;
+       
+    const { mediaType, productImage, productName, thumbnailUrl, title, url } = video.mediaId || video
 
     return (
         <div
-            key={item._id}
+            key={video?._id}
             className={`vm-list-item ${isSelected ? 'selected' : ''}`}
             onClick={handlePreviewClick}
         >
@@ -20,11 +20,11 @@ const List = ({ handlePreviewClick, selectedItem, item, handleDelete }) => {
             <div
                 className="vm-item-thumb"
                 style={{
-                    backgroundImage: item?.mediaId?.productImage?.startsWith('http')
-                        ? `url(${item?.mediaId?.productImage})`
+                    backgroundImage: productImage?.startsWith('http')
+                        ? `url(${productImage})`
                         : "",
-                    backgroundColor: !item?.mediaId?.productImage?.startsWith('http')
-                        ? (item?.mediaId?.productImage || '#e5e7eb')
+                    backgroundColor: productImage?.startsWith('http')
+                        ? (productImage || '#e5e7eb')
                         : "",
                     backgroundSize: 'cover',
                     backgroundPosition: 'center'
@@ -32,15 +32,15 @@ const List = ({ handlePreviewClick, selectedItem, item, handleDelete }) => {
             />
 
             <div className="vm-item-info">
-                <div className="vm-item-title">{item?.mediaId?.productName}</div>
+                <div className="vm-item-title">{productName}</div>
                 <div className="vm-item-product">
                     <div
                         className="vm-product-mini"
                         style={{
-                            backgroundImage: item?.mediaId?.thumbnailUrl.startsWith('http')
-                                ? `url(${item?.mediaId?.thumbnailUrl})`
+                            backgroundImage: thumbnailUrl.startsWith('http')
+                                ? `url(${thumbnailUrl})`
                                 : undefined,
-                            backgroundColor: !item?.mediaId?.thumbnailUrl.startsWith('http')
+                            backgroundColor: thumbnailUrl.startsWith('http')
                                 ?  '#e5e7eb'
                                 : undefined,
                             backgroundSize: 'cover',
@@ -48,8 +48,7 @@ const List = ({ handlePreviewClick, selectedItem, item, handleDelete }) => {
                         }}
                     ></div>
                     <span className='flex flex-col gap-2'>
-                      <p>{item?.mediaId?.title}</p>
-                      <p>{item?.mediaId?.productName}</p>  
+                      <p>{title}</p> 
                     </span>
                 </div>
             </div>
@@ -59,14 +58,14 @@ const List = ({ handlePreviewClick, selectedItem, item, handleDelete }) => {
                 <div
                     className="vm-action-icon"
                     title="Preview"
-                    onClick={(e) => handlePreviewClick(e, item)}
+                    onClick={(e) => handlePreviewClick(e, video)}
                 >
                     <Eye size={18} />
                 </div>
                 <div
                     className="vm-action-icon delete"
                     title="Delete"
-                    onClick={(e) => handleDelete(e, item?.mediaId?._id, item?._id)} // here data is nested - one id we need for clearing up zustand store and one for deleting item from widget
+                    onClick={(e) => handleDelete(e, video?.mediaId?._id, video?._id)} // here data is nested - one id we need for clearing up zustand store and one for deleting item from widget
                 >
                     <Trash2 size={18} />
                 </div>

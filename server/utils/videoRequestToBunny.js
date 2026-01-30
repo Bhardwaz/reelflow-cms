@@ -57,8 +57,9 @@ try {
 
     if (!collectionId) {
       try {
+        let folderName = site.replace(".myjoonweb.com", "");
         const collectionRes = await axios.post(`https://video.bunnycdn.com/library/${libraryId}/collections`, {
-          name: `site-${site.replace(/[^a-z0-9]/gi, '-')}`,
+          name: `${folderName.replace(/[^a-z0-9]/gi, '-')}`,
         },
           {
             headers: {

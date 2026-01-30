@@ -7,6 +7,7 @@ import List from './List';
 import { useWidgetStore } from '../../../stores/useWidgetStore';
 import useCreateWidget from './hooks/useCreateWidget';
 import { Package } from 'lucide-react';
+import Empty from '../../sharable/Empty';
 
 const WidgetPreview = ({ onBack }) => {
     const navigate = useNavigate();
@@ -14,7 +15,7 @@ const WidgetPreview = ({ onBack }) => {
 
     const selectedWidget = useWidgetStore((state) => state.selectedWidget);
     const heading = useWidgetStore((state) => state.heading);
-    const selectedMediaItems = useWidgetStore((state) => state.selectedMediaItems);
+    const selectedMediaItems = useWidgetStore((state) => state.selectedMediaItems) || []
     const toggleMediaSelection = useWidgetStore((state) => state.toggleMediaSelection);
     const isLive = useWidgetStore((state) => state.isLive);
 
@@ -27,7 +28,7 @@ const WidgetPreview = ({ onBack }) => {
         const payload = {
             selectedWidget,
             heading,
-            selectedMediaIds: selectedMediaItems.map(item => item._id),
+            selectedMediaIds: selectedMediaItems.map(item => item?._id),
 
             isLive: isLive,
             integrate: true,
@@ -48,7 +49,7 @@ const WidgetPreview = ({ onBack }) => {
         if (confirmed) {
             // This instantly removes it from the store & UI
             toggleMediaSelection(video);
-            if (selectedVideo?._id === video._id) setSelectedVideo(null);
+            if (selectedVideo?._id === video?._id) setSelectedVideo(null);
         }
     };
 
@@ -60,14 +61,12 @@ const WidgetPreview = ({ onBack }) => {
         <div className="container-wrapper">
             <div className="main-content">
 
-                {/* --- HEADER --- */}
                 <div className="vm-header">
                     <div className="vm-title-group" onClick={() => navigate(-1)} style={{ cursor: 'pointer' }}>
                         <ArrowLeft size={20} />
                         <h1>Back</h1>
                     </div>
 
-                    {/* PROGRESS BAR (Step 3 of 3) */}
                     <div className="vs-progress-container" style={{ maxWidth: '300px', margin: '0 20px' }}>
                         <div className="vs-steps-row" style={{ marginBottom: '5px' }}>
                             <span style={{ fontSize: '1.3rem', color: '#666' }}>Final Review</span>
@@ -105,14 +104,11 @@ const WidgetPreview = ({ onBack }) => {
                     </div>
                 </div>
 
-                {/* --- MAIN GRID --- */}
                 <div className="vm-grid">
 
-                    {/* LEFT PANEL */}
                     <div className="vm-left-panel">
                         <div className="vm-controls-card">
 
-                            {/* Tabs */}
                             <div className="vm-tabs">
                                 <div className="vm-tab active">
                                     <span> {selectedWidget?.toUpperCase() || "WIDGET"} </span>
@@ -120,10 +116,8 @@ const WidgetPreview = ({ onBack }) => {
                                 </div>
                             </div>
 
-                            {/* ACTION BAR: Add Videos + Live Toggle */}
                             <div className="vm-action-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
 
-                                {/* Add More Button */}
                                 <Button
                                     variant="outline"
                                     onClick={() => navigate('/create/library')}
@@ -133,7 +127,6 @@ const WidgetPreview = ({ onBack }) => {
                                     Add more videos
                                 </Button>
 
-                                {/* LIVE TOGGLE SWITCH */}
                                 <div
                                     className="live-toggle-wrapper"
                                     onClick={toggleLiveStatus}
@@ -170,26 +163,27 @@ const WidgetPreview = ({ onBack }) => {
 
                         {/* Draggable List */}
                         <div className="vm-list">
-                            {selectedMediaItems.map((video) => (
-                                <List
-                                    key={video._id}
-                                    video={video}
-                                    selectedVideo={selectedVideo}
-                                    setSelectedVideo={setSelectedVideo}
-                                    handleDelete={(e) => handleDelete(e, video)}
-                                />
-                            ))}
+                            {
+                                selectedMediaItems?.length > 0 ? selectedMediaItems.map((video) => {
+                                    // 1. Log the video here
+                                    console.log("Current Video Item:", video);
+
+                                    // 2. Explicitly return the component
+                                    return (
+                                        <List
+                                            key={video?._id}
+                                            video={video}
+                                            selectedItem={selectedVideo}
+                                            setSelectedVideo={setSelectedVideo}
+                                            handleDelete={(e) => handleDelete(e, video)}
+                                        />
+                                    );
+                                }) : null
+                            }
 
                             {selectedMediaItems.length === 0 && (
                                 <div className="text-center py-8 text-gray-400 border border-dashed rounded-lg">
-                                    No videos selected.
-                                    <br />
-                                    <span
-                                        onClick={() => navigate('/create/library')}
-                                        style={{ color: '#3b82f6', cursor: 'pointer', textDecoration: 'underline' }}
-                                    >
-                                        Click here to add some.
-                                    </span>
+                                    <Empty title='Video Removed' description='No Media to create widget' actionLabel="Add Some" onAction={'/create/library'} /> 
                                 </div>
                             )}
                         </div>

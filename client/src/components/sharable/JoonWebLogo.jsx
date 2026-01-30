@@ -17,7 +17,6 @@ const JoonWebLogo = ({
       style={{ padding: '5px', ...style }}
     >
       <g>
-        
         <text 
           x="0" 
           y="34" 

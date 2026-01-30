@@ -33,12 +33,6 @@ const BaseWidget = new Schema({
 
     sortOrder: { type: Number, default: 0 },
 
-    containerStyle: {
-        backgroundColor: { type: String, default: '#ffffff' },
-        paddingTop: { type: Number, default: 20 },
-        paddingBottom: { type: Number, default: 20 }
-    },
-
     deviceVisibility: {
         type: String,
         enum: ["all", "mobile", "desktop-only"]

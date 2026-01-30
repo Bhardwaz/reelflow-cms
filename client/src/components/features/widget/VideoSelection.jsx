@@ -11,23 +11,19 @@ import { useWidgetStore } from '../../../stores/useWidgetStore';
 import { useFetchLibrary } from "../library/hooks/useFetchLibrary";
 import ReelsTableShimmer from "../../shimmir/ReelsTableShimmer";
 
-// 👇 Import your consistent Empty component
 import Empty from '../../sharable/Empty';
 
 const VideoSelection = ({ onBack }) => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
 
-  // 1. Store Data
   const selectedMediaItems = useWidgetStore((state) => state.selectedMediaItems) || [];
   const toggleMediaSelection = useWidgetStore((state) => state.toggleMediaSelection);
   const selectedWidget = useWidgetStore((state) => state.selectedWidget);
 
-  // 2. Fetch Real Data
   const { data: library, isLoading: isLibraryLoading, isError, refetch } = useFetchLibrary();
   const reelsList = Array.isArray(library) ? library : (library?.data || []);
 
-  // 3. Filter Data (Updated to match Library Logic: Title OR Product)
   const visibleReels = reelsList.filter((item) => {
     const term = searchTerm.toLowerCase();
     const matchesTitle = item.title?.toLowerCase().includes(term);
@@ -35,13 +31,11 @@ const VideoSelection = ({ onBack }) => {
     return matchesTitle || matchesProduct;
   });
 
-  // Helper: Is library totally empty?
   const isGlobalEmpty = !isLibraryLoading && !isError && reelsList.length === 0;
 
-  // 4. PIP Logic Helper
   const isPIP = selectedWidget?.toLowerCase().includes('pip'); 
   
-  const isSelected = (id) => selectedMediaItems.some((item) => item._id === id);
+  const isSelected = (id) => selectedMediaItems.some((item) => item?._id === id);
 
   const isSelectionDisabled = (currentId) => {
       if (isPIP && selectedMediaItems.length >= 1 && !isSelected(currentId)) {
@@ -61,6 +55,8 @@ const VideoSelection = ({ onBack }) => {
   const handleNext = () => {
       navigate("/create/preview");
   }
+  
+  console.log("on video selection")
 
   return (
     <div className="container-wrapper">
@@ -169,12 +165,12 @@ const VideoSelection = ({ onBack }) => {
             /* 5. SUCCESS GRID */
             <div className="vs-grid">
                 {visibleReels.map((video) => {
-                    const selected = isSelected(video._id);
-                    const disabled = isSelectionDisabled(video._id);
+                    const selected = isSelected(video?._id);
+                    const disabled = isSelectionDisabled(video?._id);
 
                     return (
                         <div 
-                            key={video._id} 
+                            key={video?._id} 
                             className={`vs-card ${selected ? 'selected' : ''} ${disabled ? 'disabled-card' : ''}`}
                             onClick={() => handleCardClick(video)}
                         >

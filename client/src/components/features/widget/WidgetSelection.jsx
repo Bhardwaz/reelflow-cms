@@ -22,6 +22,8 @@ const WidgetSelection = () => {
     }
     navigate("/create/library");
   };
+  
+  console.log("rendering widget selection")
 
   return (
     <div className='container-wrapper'>
@@ -52,7 +54,7 @@ const WidgetSelection = () => {
                 label="Stories"
                 isSelected={selectedWidget === 'stories'}
                 onClick={setSelectedWidget}
-                disabled={true} // <--- Disables click & shows badge
+                disabled={true}
               >
                 <StoriesPreview />
               </WidgetOption>
@@ -62,7 +64,7 @@ const WidgetSelection = () => {
                 label="Floating"
                 isSelected={selectedWidget === 'pip'}
                 onClick={setSelectedWidget}
-                disabled={true} // <--- Disables click & shows badge
+                disabled={false}
               >
                 <PipPreview />
               </WidgetOption>
@@ -130,9 +132,7 @@ const WidgetSelection = () => {
   );
 };
 
-// --- UPDATED SUB-COMPONENTS ---
 
-// ✅ Updated WidgetOption with Disabled Logic
 const WidgetOption = ({ id, label, isSelected, onClick, children, disabled }) => {
   const handleClick = () => {
     if (!disabled) {
@@ -145,7 +145,7 @@ const WidgetOption = ({ id, label, isSelected, onClick, children, disabled }) =>
       onClick={handleClick}
       className={`ws-option relative ${isSelected ? 'selected' : ''} ${disabled ? 'opacity-60 cursor-not-allowed grayscale' : 'cursor-pointer'}`}
     >
-      {/* Coming Soon Badge Overlay */}
+
       {disabled && (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/50 backdrop-blur-[1px] rounded-lg">
           <span className="bg-black text-white text-xs font-bold px-2 py-1 rounded-full shadow-md">

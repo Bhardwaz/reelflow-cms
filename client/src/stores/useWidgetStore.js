@@ -3,7 +3,6 @@ import { devtools, persist } from 'zustand/middleware';
 
 export const useWidgetStore = create(
   devtools(
-    persist(
       (set) => ({
         // payload for Apis - we are storing it just because of user choose from 3 screens and we do not want to lose user's choices if he drops in between but we are resetting this payload on success of api
 
@@ -95,5 +94,4 @@ export const useWidgetStore = create(
         }),
       }
     )
-  )
 );

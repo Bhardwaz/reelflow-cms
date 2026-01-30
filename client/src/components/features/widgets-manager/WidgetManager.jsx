@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   ArrowLeft, ExternalLink, GripVertical, Eye, Trash2, Plus, Play,
-  Power, Video 
+  Power, Settings, Video 
 } from 'lucide-react';
 import './WidgetManager.css';
 import Button from '../../sharable/Button';
@@ -73,6 +73,7 @@ const WidgetManager = ({ onBack }) => {
 
   const handleLive = () => {
     if (!selectedWidgetId) return
+    console.log(selectedWidgetId, "selected widget id")
     toggleLive(
       {
         widgetId: selectedWidgetId,
@@ -93,11 +94,7 @@ const WidgetManager = ({ onBack }) => {
       </div>
     );
   }
-
-  console.log(widgetsData, "widgets data")
-
-  console.log(filteredItems, "filtered items")
-   
+ 
   return (
     <div className="container-wrapper">
       <div className="main-content">
@@ -149,19 +146,25 @@ const WidgetManager = ({ onBack }) => {
                   <div className='icon-box'> <Plus size={16} /> </div>
                   Attach more videos
                 </Button>
+
+                 <Button onClick={() => navigate('/settings')}>
+                  <div className='icon-box'> <Settings size={16} /> </div>
+                  Settings
+                </Button>
+
               </div>
 
             </div>
 
             {/* Draggable List */}
             <div className="vm-list">
-              {filteredItems?.map((item) => (
+              {filteredItems?.map((video) => (
                 <List
-                  handlePreviewClick={(e) => handlePreviewClick(e, item)}
+                  video={video}
+                  handlePreviewClick={(e) => handlePreviewClick(e, video)}
                   selectedItem={selectedItem}
-                  item={item}
                   handleDelete={handleDelete}
-                  key={item._id}
+                  key={video._id}
                 />
               ))}
 

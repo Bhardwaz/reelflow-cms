@@ -22,7 +22,7 @@ import { useState, useEffect } from 'react';
 const Dashboard = () => {
     const { data: siteData } = useSiteData();
     const { data: dashboardView, isLoading } = useViews();
-    const navigate = useNavigate();
+    const navigate = useNavigate(); 
 
     useEffect(() => {
         console.log(dashboardView, "dashboard data now");
@@ -35,7 +35,7 @@ const Dashboard = () => {
     const todayStr = new Date().toISOString().split('T')[0];
     const viewsUsedToday = dashboardView?.data?.chartData?.find(item => item.date === todayStr)?.views || 0;
 
-    const planLimit = siteData?.plan?.monthlyLimit || 500;
+    const planLimit = siteData?.plan?.monthlyLimit || 250;
     const usagePercentage = isLoading ? 0 : Math.min((monthlyViews / planLimit) * 100, 100);
 
     const isWarning = usagePercentage >= 80 && usagePercentage < 95;
@@ -80,7 +80,9 @@ const Dashboard = () => {
                             <Sparkles size={18} fill="white" />
                         </div>
                         <div>
-                            <h1>JoonWeb Shoppable Reel</h1>
+                            <h3 style={{ marginTop: "0.5rem", fontSize: "1.4rem", fontWeight: 700, color: "#444", lineHeight: 1.4 }}>
+                                👋 Hi, <span style={{ fontWeight: 600, color: "#000" }}> {siteData?.site?.replace(".myjoonweb.com", "")} </span>
+                            </h3>
                             <p className="header-subtitle">Video Analytics Dashboard</p>
                         </div>
                     </div>

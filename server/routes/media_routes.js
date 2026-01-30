@@ -2,7 +2,7 @@ const express = require("express")
 const router = express.Router()
 const sendResponse = require("../utils/sendResponse")
 
-const { getLibrary, createVideo, removeMediaFromWidget, getProducts, deleteMedia } = require("../controllers/media.controllers");
+const { getLibrary, createVideo, removeMediaFromWidget, getProducts, deleteMedia, changeProduct } = require("../controllers/media.controllers");
 const auth = require("../middleware/auth");
 const { createImage, uploadMiddleware } = require("../controllers/media.controllers");
 const checkDbSession = require("../middleware/checkDbSession");
@@ -40,6 +40,8 @@ router.post("/atc/:id", async (req, res) => {
         return sendResponse.error(res, "SERVER_ERROR", "Failed to update count", 500);
     }
 });
+
+router.patch('/changeProduct/:mediaId', auth, checkDbSession, changeProduct)
 
 module.exports = router
 

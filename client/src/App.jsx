@@ -15,6 +15,7 @@ import WidgetsDashboard from "./components/features/widgets-manager/WidgetsDashb
 import WidgetManager from "./components/features/widgets-manager/WidgetManager";
 import AttachVideosToWidget from "./components/features/widgets-manager/AttachVideosToWidget";
 import NotFound from "./components/NotFound";
+import WidgetSwitch from "./components/settings/WidgetSwitch";
 
 export default function App() {
   return (
@@ -42,6 +43,8 @@ export default function App() {
 
           {/* Analytics / Table View */}
           <Route path="/library" element={<Reels />} />
+
+          <Route path="/settings" element={<WidgetSwitch />} />
 
           <Route path="*" element={<NotFound />} />
 

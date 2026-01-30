@@ -250,64 +250,102 @@ exports.getAllWidgets = asyncHandler(async (req, res) => {
 })
 
 exports.getWidgetWithProducts = asyncHandler(async (req, res) => {
-    const { site, widgetType } = req.query
+    const { site, widgetType } = req.query;
 
     if (!site) {
         return sendResponse.error(res, "BAD_REQUEST", "site is required", 400);
     }
-    
-    const isExist = await PlatformSession.findOne({ site_domain: site })
-    const access_token = isExist?.access_token
 
-    const widget = await Widget.findOne({
+    const isExist = await PlatformSession.findOne({ site_domain: site });
+    const access_token = isExist?.access_token;
+
+    let carouselDoc = await Carousel.findOne({
         site,
         isLive: true,
         integrate: true,
-        widgetType,
+        widgetType: "Carousel",
     }).populate({
         path: 'items',
         populate: {
             path: 'mediaId',
-            select: 'url thumbnailUrl previewAnimationUrl productId productName'
-        }
-    }).lean()
-
-    if (!widget) {
-        return sendResponse.success(res, null, "No active widget found for this page", 200);
-    }
-
-    const productsIds = [...new Set(widget.items.map(item => item.mediaId.productId).filter(id => id))]
-
-    const promises = productsIds.map(id => fetchProductsByIds(id, site, access_token));
-    const data = await Promise.all(promises);
-
-    const productsWithKeys = {}
-
-    // console.log(results, "results of joonweb daaaaaapis")
-
-    // results?.forEach(r => {
-    //     if (r && r.id) {
-    //         productsWithKeys[r.id] = r
-    //     }
-    // })
-
-    data.forEach(product => {
-        if (product && product.id) {
-            productsWithKeys[product.id] = product;
+            select: 'url thumbnailUrl previewAnimationUrl productId productName hlsUrl carouselSettings'
         }
     });
 
-    widget.items.forEach(item => {
-        const pId = item?.mediaId?.productId;
-        if (pId && productsWithKeys[pId]) {
-            if (item.mediaId) {
-                item.mediaId.productJSON = productsWithKeys[pId];
-            }
+    let widgetPipDoc = await Widget.findOne({
+        site,
+        isLive: true,
+        integrate: true,
+        widgetType: "Pip",
+    }).populate({
+        path: 'items',
+        populate: {
+            path: 'mediaId',
+            select: 'url thumbnailUrl previewAnimationUrl productId productName hlsUrl pipSettings'
         }
-    })
+    });
 
-    return sendResponse.success(res, widget, "Widget loaded with products", 200);
-})
+    if (!carouselDoc && !widgetPipDoc) {
+        return sendResponse.success(res, null, "No active widget found for this page", 200);
+    }
+
+    const carousel = carouselDoc ? carouselDoc.toObject({ virtuals: true }) : null;
+    const widgetPip = widgetPipDoc ? widgetPipDoc.toObject({ virtuals: true }) : null;
+
+    const carouselProductIds = carousel?.items
+        ? [...new Set(carousel.items.map(item => String(item.mediaId?.productId)).filter(id => id))]
+        : [];
+
+    const pipProductIds = widgetPip?.items
+        ? [...new Set(widgetPip.items.map(item => String(item.mediaId?.productId)).filter(id => id))]
+        : [];
+
+    const [carouselProducts, pipProducts] = await Promise.all([
+        Promise.all(carouselProductIds.map(id => fetchProductsByIds(id, site, access_token))),
+        Promise.all(pipProductIds.map(id => fetchProductsByIds(id, site, access_token)))
+    ]);
+
+    const carouselProductsWithKeys = {};
+    carouselProducts.forEach(product => {
+        if (product && product.id) {
+            carouselProductsWithKeys[String(product.id)] = product;
+        }
+    });
+
+    const pipProductsWithKeys = {};
+    pipProducts.forEach(product => {
+        if (product && product.id) {
+            pipProductsWithKeys[String(product.id)] = product;
+        }
+    });
+
+    if (carousel?.items) {
+        carousel.items.forEach(item => {
+            if (item.mediaId && item.mediaId.productId) {
+                const pId = String(item.mediaId.productId);
+                if (carouselProductsWithKeys[pId]) {
+                    item.mediaId.productJSON = carouselProductsWithKeys[pId];
+                }
+            }
+        });
+    }
+
+    if (widgetPip?.items) {
+        widgetPip.items.forEach(item => {
+            if (item.mediaId && item.mediaId.productId) {
+                const pId = String(item.mediaId.productId);
+                if (pipProductsWithKeys[pId]) {
+                    item.mediaId.productJSON = pipProductsWithKeys[pId];
+                }
+            }
+        });
+    }
+
+    return sendResponse.success(res, {
+        Carousel: carousel,
+        Pip: widgetPip
+    }, "Widget loaded with products", 200);
+});
 
 exports.deleteWidget = asyncHandler(async (req, res) => {
     const site = req.session.site
@@ -331,4 +369,64 @@ exports.deleteWidget = asyncHandler(async (req, res) => {
     }
 
     return sendResponse.success(res, null, "Widget and all its contents deleted successfully", 200);
+})
+
+exports.carouselCardsSettings = asyncHandler(async (req, res) => {
+    const { widgetId } = req.params;
+    const site = req.session.site;
+    
+    const incomingData = req.body;
+    
+    console.log(incomingData)
+
+    if (!site || !widgetId) {
+        return sendResponse.error(res, "BAD_REQUEST", "Missing ID or Session", 400);
+    }
+
+    const Carousel = mongoose.model('Carousel');
+    const widget = await Carousel.findOne({ _id: widgetId, site });
+    
+    if (!widget) {
+        return sendResponse.error(res, "NOT_FOUND", "Widget not found", 404);
+    }
+
+    widget.carouselSettings = incomingData
+      
+    widget.markModified('carouselSettings');
+    
+    await widget.save();
+
+    return sendResponse.success(res, "Card settings updated successfully", {
+        settings: widget.carouselSettings
+    });
+});
+
+exports.pipSettings = asyncHandler(async (req, res) => {
+    const { widgetId } = req.params;
+    const site = req.session.site;
+    
+    const incomingData = req.body;
+
+    console.log(widgetId, site, incomingData, "data coming from frontend ")
+    
+    if (!site || !widgetId) {
+        return sendResponse.error(res, "BAD_REQUEST", "Missing ID or Session", 400);
+    }
+
+    const Pip = mongoose.model('Pip');
+    const widget = await Pip.findOne({ _id: widgetId, site });
+    
+    if (!widget) {
+        return sendResponse.error(res, "NOT_FOUND", "Widget not found", 404);
+    }
+
+    widget.pipSettings = incomingData
+      
+    widget.markModified('pipSettings');
+    
+    await widget.save();
+
+    return sendResponse.success(res, "Card settings updated successfully", {
+        settings: widget.pipSettings
+    });
 })

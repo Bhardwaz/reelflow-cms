@@ -11,6 +11,7 @@ const { Context, JoonWebAPI, Helper } = require('@joonweb/joonweb-sdk')
 const session = require('express-session');
 const verifyHmac = require("../utils/joonwebHelper");
 const sendResponse = require("../utils/sendResponse")
+const mongoose = require('mongoose')
 
 app.use(cors({
   origin: '*',
@@ -27,12 +28,14 @@ const mediaRoutes = require("../routes/media_routes")
 const widgetsRoutes = require("../routes/widgets_routes");
 const mediaEvents = require("../controllers/events/mediaEvents")
 
+
+
 // middlewares
 app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true, limit: "10kb" }))
 
 // database
-connectingToDatabase()
+connectingToDatabase();
 
 Context.init({
   api_key: process.env.JOONWEB_CLIENT_ID,
@@ -88,16 +91,19 @@ app.get("/healthCheck", (req, res) => {
 });
 
 //development
-// if (process.env.NODE_ENV === 'development') {
-//   app.use((req, res, next) => {
-//     if (!req.session.site) {
-//       console.log("using mock session for dev");
-//       req.session.site = "sumit-bhardwaj.myjoonweb.com";
-//       req.session.joonweb_user = "test-user";
-//     }
-//     next();
-//   });
-// }
+if (process.env.NODE_ENV === 'development') {
+  app.use((req, res, next) => {
+    if (!req.session.site) {
+      console.log("using mock session for dev");
+      req.session.site = "sumit-bhardwaj.myjoonweb.com";
+      req.session.joonweb_user = "test-user";
+    }
+    next();
+  });
+}
+
+app.use('/api/v1/media', mediaRoutes)  // image-video creation
+app.use('/api/v1/widgets', widgetsRoutes)
 
 async function checkValidation(req, res, next) {
   const site = req.session.site
@@ -176,8 +182,7 @@ app.use('/auth', authRoutes)
 //app.use(checkValidation)
 
 console.log("Passed Validation");
-app.use('/api/v1/media', mediaRoutes)  // image-video creation
-app.use('/api/v1/widgets', widgetsRoutes)
+
 
 app.get('/api/v1/site', async (req, res) => {
   const site = req.session.site;
@@ -192,7 +197,7 @@ app.get('/api/v1/site', async (req, res) => {
     const userInfo = req.session.joonweb_user
     siteInfo = await api.site.get();
 
-    return res.json({ userInfo, site });
+    return res.json({ userInfo, site, siteInfo });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }

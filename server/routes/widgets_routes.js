@@ -1,6 +1,6 @@
 const express = require('express')
 const auth = require('../middleware/auth')
-const { createWidget, getAllWidgets, deleteWidget, getWidgetWithProducts, attachMediaToWidget, toggleLive } = require('../controllers/widget_controller')
+const { createWidget, getAllWidgets, deleteWidget, getWidgetWithProducts, attachMediaToWidget, toggleLive, carouselCardsSettings, pipSettings } = require('../controllers/widget_controller')
 const checkDbSession = require('../middleware/checkDbSession')
 
 const router = express.Router()
@@ -17,5 +17,8 @@ router.get('/getWidget', getWidgetWithProducts)
 router.post("/attach", auth, checkDbSession, attachMediaToWidget)
 
 router.patch("/goLive/:widgetId", checkDbSession, toggleLive)
+
+router.patch("/cards/settings/:widgetId", checkDbSession, carouselCardsSettings);
+router.patch("/pip/settings/:widgetId", checkDbSession, pipSettings);
 
 module.exports = router

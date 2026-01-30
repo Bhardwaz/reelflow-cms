@@ -13,7 +13,8 @@ import {
   Image as ImageIcon,
   Trash2,
   Video,
-  SearchX
+  SearchX,
+  Edit
 } from 'lucide-react';
 
 import "./Reels.css";
@@ -65,6 +66,28 @@ export default function Reels() {
         console.error("Delete failed", error);
       }
     }
+  };
+
+  const handleEditMedia = (reel) => {
+    // Navigate to edit page with media data as state
+    navigate('/upload/media', {
+      state: {
+        isEditMode: true,
+        existingMedia: {
+          id: reel._id,
+          url: reel.url,
+          thumbnailUrl: reel.thumbnailUrl,
+          mediaType: reel.mediaType,
+          title: reel.title,
+          type: reel.mediaType === 'Video' ? 'video/mp4' : 'image/jpeg'
+        },
+        existingProduct: reel.productId ? {
+          id: reel.productId,
+          title: reel.productName,
+          cover: reel.productImage || reel.productCover
+        } : null
+      }
+    });
   };
 
   console.log(userInfo)
@@ -164,7 +187,8 @@ export default function Reels() {
                     <div
                       key={reel._id}
                       className="reel-item-card group"
-                    // onClick={() => navigate(`/reels/edit/${reel._id}`)}
+                      onClick={() => handleEditMedia(reel)}
+                      style={{ cursor: 'pointer' }}
                     >
                       <div className="reel-thumb-container">
 
@@ -188,6 +212,35 @@ export default function Reels() {
                             <ImageIcon size={14} color="black" />
                           )}
                         </div>
+
+                        <button
+                          className="edit-icon-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditMedia(reel);
+                          }}
+                          title="Edit Media"
+                          style={{
+                            position: 'absolute',
+                            top: '8px',
+                            left: '8px',
+                            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                            border: 'none',
+                            borderRadius: '6px',
+                            padding: '6px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            opacity: 0,
+                            transition: 'opacity 0.2s ease',
+                            zIndex: 10
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(37, 99, 235, 0.9)'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.6)'}
+                        >
+                          <Edit size={16} color="white" strokeWidth={2.5} />
+                        </button>
 
                         <button
                           className="delete-icon-btn"
